@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>B&amp;C Weekly Hours</title>
+<meta name="theme-color" content="#14233f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+/* Layout: one column of site-sheet sections, navy header band, sticky totals + send bar at the bottom */
+:root{
+  --navy:#14233f; --gold:#b8923a; --bg:#f3f4f7; --card:#ffffff; --fg:#1b2333; --muted:#5d667a;
+  --line:#d8dce5; --field:#f8f9fb; --good:#1f7a4d; --warn:#a86400; --bad:#b3261e; --onnavy:#ffffff;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif; --body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e1420; --card:#172033; --fg:#e8ebf2; --muted:#9aa4b8; --line:#2b3650; --field:#111a2a;
+  --good:#4cc38a; --warn:#e3a33b; --bad:#ff7b72; color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1420; --card:#172033; --fg:#e8ebf2; --muted:#9aa4b8; --line:#2b3650; --field:#111a2a;
+  --good:#4cc38a; --warn:#e3a33b; --bad:#ff7b72; color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 var(--body);padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+header{background:var(--navy);color:var(--onnavy);border-bottom:4px solid var(--gold);
+  padding-top:calc(14px + env(safe-area-inset-top,0px));padding-bottom:14px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.hwrap,main{max-width:720px;margin:0 auto}
+.co{font:600 13px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+h1{font:700 26px/1.1 var(--display);margin:2px 0 4px;letter-spacing:.01em}
+.ref{font-size:13px;opacity:.85}
+.saved{margin-top:8px;font-size:13px;display:flex;gap:6px;align-items:center}
+.dot{width:8px;height:8px;border-radius:50%;background:#4cc38a;flex:none}
+main{padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:16px}
+section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:12px}
+h2{font:700 19px var(--display);margin:0;letter-spacing:.02em;text-transform:uppercase;color:var(--fg);display:flex;gap:8px;align-items:baseline}
+h2 span{color:var(--gold)}
+.note{font-size:14px;color:var(--muted);margin:0}
+label.f{display:grid;gap:4px;font-size:14px;font-weight:600;min-width:0}
+input[type=text],input[type=date],input[type=time],input[type=email],select,textarea{
+  width:100%;font:inherit;font-weight:400;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:8px;padding:10px 10px;min-height:46px}
+textarea{min-height:64px;resize:vertical}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid var(--gold);outline-offset:1px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.choices{display:flex;flex-wrap:wrap;gap:8px}
+.choices label{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--field);border-radius:8px;padding:10px 12px;font-weight:500;cursor:pointer}
+.choices input{width:20px;height:20px;accent-color:var(--navy)}
+.day{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.day.on{border-color:var(--gold)}
+.dhead{display:flex;align-items:center;gap:10px;padding:12px;background:var(--field);cursor:pointer;user-select:none}
+.dname{font:700 18px var(--display);width:44px}
+.ddate{color:var(--muted);font-size:14px;flex:1}
+.dhrs{font-variant-numeric:tabular-nums;font-weight:600}
+.dhead .tog{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600}
+.dhead .tog input{width:22px;height:22px;accent-color:var(--gold)}
+.dbody{padding:12px;display:grid;gap:10px}
+.calc{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.err{color:var(--bad);font-weight:600}
+.check{display:grid;gap:6px;padding:12px;border:1px solid var(--line);border-radius:8px}
+.check .q{font-weight:600}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-weight:600;font-size:14px;border:1px solid currentColor}
+.ok{color:var(--good)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+.sigbox{border:1px dashed var(--muted);border-radius:8px;background:#fff;touch-action:none;position:relative}
+canvas{display:block;width:100%;height:150px}
+.sighint{position:absolute;left:12px;bottom:8px;color:#8a92a3;font-size:13px;pointer-events:none}
+.btn{font:600 16px var(--body);border-radius:8px;border:1px solid var(--line);background:var(--field);color:var(--fg);padding:12px 14px;min-height:48px;cursor:pointer}
+.btn.primary{background:var(--navy);color:#fff;border-color:var(--navy)}
+.btn.gold{background:var(--gold);color:#14233f;border-color:var(--gold)}
+.btn.small{min-height:38px;padding:6px 12px;font-size:14px}
+.decl{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.decl input{width:24px;height:24px;flex:none;margin-top:2px;accent-color:var(--navy)}
+.banner{border-radius:10px;padding:12px 14px;border:1px solid var(--warn);color:var(--fg);background:var(--card);display:grid;gap:8px}
+.banner b{color:var(--warn)}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);z-index:5;
+  padding-top:10px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.barin{max-width:720px;margin:0 auto;display:grid;gap:8px}
+.tot{display:flex;justify-content:space-between;align-items:baseline;font-variant-numeric:tabular-nums}
+.tot strong{font:700 24px var(--display)}
+.btns{display:grid;grid-template-columns:1fr 1.4fr;gap:8px}
+.panel{position:fixed;inset:0;background:rgba(10,15,25,.55);display:flex;align-items:flex-end;justify-content:center;z-index:20;padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.sheet{background:var(--card);color:var(--fg);border-radius:12px;max-width:560px;width:100%;padding:18px;display:grid;gap:12px;max-height:85vh;overflow:auto}
+.sheet h3{font:700 22px var(--display);margin:0}
+.sheet ol{margin:0;padding-left:20px;display:grid;gap:6px}
+.addr{font:600 17px var(--body);word-break:break-all;background:var(--field);border:1px solid var(--line);border-radius:8px;padding:10px;user-select:all}
+.foot{font-size:12px;color:var(--muted);text-align:center;padding:4px 0 8px}
+@media (prefers-reduced-motion:no-preference){.btn{transition:filter .15s}.btn:active{filter:brightness(.9)}}
+</style>
+</head>
+<body>
+<header><div class="hwrap">
+  <div class="co">Build &amp; Cover Ltd</div>
+  <h1>Weekly Site Hours Record</h1>
+  <div class="ref">HR-FORM-013 v1.2 · fill in each day · send at the end of the week</div>
+  <div class="saved" id="saved"><span class="dot"></span><span id="savedTxt">Saves automatically on this phone</span></div>
+</div></header>
+
+<main>
+  <div class="banner" id="oldWeek" hidden>
+    <div><b>This sheet is for an earlier week</b> (<span id="oldWeekTxt"></span>). If you've already sent it, start a new week. If not, send it now.</div>
+    <div><button class="btn small" id="oldNew" type="button">Start new week</button></div>
+  </div>
+
+  <section>
+    <h2><span>1</span> Operative and week</h2>
+    <label class="f">Your name<input type="text" id="name" autocomplete="name" placeholder="e.g. Andrew Lindley"></label>
+    <label class="f">Engaged through (sole trader / sub-contract company)<input type="text" id="company" placeholder="e.g. Sole trader — labour-only sub-contractor (CIS)"></label>
+    <label class="f">Week commencing (Monday)<input type="date" id="weekStart"></label>
+    <div class="f" style="font-size:14px;font-weight:600">Basis of work this week</div>
+    <div class="choices" id="basis">
+      <label><input type="radio" name="basis" value="Priced work">Priced work</label>
+      <label><input type="radio" name="basis" value="Daywork">Daywork</label>
+      <label><input type="radio" name="basis" value="Both">Both</label>
+    </div>
+  </section>
+
+  <section>
+    <h2><span>2</span> Hours worked</h2>
+    <p class="note">Tick each day you work. Enter the job number, site, start and finish times. One hour is deducted for breaks unless you change it. Times should match the client's site sign-in register.</p>
+    <div id="days" style="display:grid;gap:10px"></div>
+  </section>
+
+  <section>
+    <h2><span>3</span> Weekly check</h2>
+    <p class="note">Worked out for you from the hours above.</p>
+    <div class="check"><div class="q">Rest day taken this week (at least one full day in every seven)</div><div id="cRest"></div>
+      <label class="f" id="wRest" hidden>Reason<input type="text" id="restWhy"></label></div>
+    <div class="check"><div class="q">More than 48 hours worked this week</div><div id="c48"></div>
+      <label class="f" id="w48" hidden>Reason (to be reviewed by the Director)<input type="text" id="o48Why"></label></div>
+    <div class="check"><div class="q">More than 60 hours worked in any seven days (absolute limit)</div><div id="c60"></div>
+      <label class="f" id="w60" hidden>Reason — stop further work and tell the Director the same day<input type="text" id="o60Why"></label></div>
+    <div class="check"><div class="q">Training / toolbox talk attended this week (paid at the agreed rate)</div>
+      <div class="choices">
+        <label><input type="radio" name="training" value="No">No</label>
+        <label><input type="radio" name="training" value="Yes">Yes</label>
+      </div>
+      <label class="f" id="wTrain" hidden>Course / talk<input type="text" id="trainingWhat"></label></div>
+  </section>
+
+  <section>
+    <h2><span>4</span> Declaration and signature</h2>
+    <label class="decl"><input type="checkbox" id="declared"><span>I confirm that the hours above are a true record of the time I worked, that I took the breaks shown, and that I was not required to work any hours I had not agreed to. I understand that I can raise any concern about hours, pay or treatment with the Director or under the Whistleblowing Policy (ETH-POL-003) without detriment.</span></label>
+    <div class="f" style="font-size:14px;font-weight:600">Sign with your finger</div>
+    <div class="sigbox"><canvas id="sig"></canvas><span class="sighint" id="sigHint">Sign here</span></div>
+    <div><button class="btn small" type="button" id="sigClear">Clear signature</button></div>
+  </section>
+
+  <section>
+    <h2>Last week</h2>
+    <p class="note" id="lastTxt">No previous week saved on this phone yet.</p>
+    <div><button class="btn small" type="button" id="lastResend" hidden>Send last week again</button></div>
+  </section>
+
+  <div class="foot">Weekly Site Hours Record · HR-FORM-013 v1.2 · Build &amp; Cover Ltd<br>Entries are kept on this phone until you send them.</div>
+</main>
+
+<div class="bar"><div class="barin">
+  <div class="tot"><span>Total hours this week</span><strong id="total">0</strong></div>
+  <div class="btns">
+    <button class="btn" type="button" id="sendPart">Send copy so far</button>
+    <button class="btn primary" type="button" id="sendFinal">Finish week &amp; send</button>
+  </div>
+</div></div>
+
+<div class="panel" id="panel" hidden><div class="sheet" id="sheet"></div></div>
+
+<script>
+// ---- Settings -------------------------------------------------------------
+const SEND_TO = "accounts@buildandcover.co.uk";   // where finished timesheets go
+const FORM = {ref:"HR-FORM-013", ver:"v1.2", issue:"06 October 2026", review:"22 April 2027", by:"G. Alcock, Director", status:"Approved – For Issue"};
+const KEY = "bc_hr013_current", KEY_PROFILE = "bc_hr013_profile", KEY_LAST = "bc_hr013_last";
+const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const DAYS_LONG = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+
+// ---- Storage helpers ------------------------------------------------------
+function load(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch(e){return null}}
+function store(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}
+
+// ---- Dates ----------------------------------------------------------------
+function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function parseIso(s){const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)}
+function mondayOf(d){const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());const wd=(x.getDay()+6)%7;x.setDate(x.getDate()-wd);return x}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
+function ddmmyy(d){return String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+String(d.getFullYear()).slice(2)}
+function dashDate(d){return ddmmyy(d).replace(/\//g,"-")}
+function longDate(d){return DAYS_LONG[(d.getDay()+6)%7]+" "+d.getDate()+" "+d.toLocaleString("en-GB",{month:"long"})+" "+d.getFullYear()}
+
+// ---- State ----------------------------------------------------------------
+function blankWeek(profile){
+  return {v:1,name:profile?.name||"",company:profile?.company||"",weekStart:iso(mondayOf(new Date())),basis:profile?.basis||"",
+    days:DAYS.map(()=>({worked:false,job:"",site:"",work:"",start:"",finish:"",brk:"1"})),
+    restWhy:"",o48Why:"",o60Why:"",training:"",trainingWhat:"",declared:false,sig:"",sentPart:"",updated:""};
+}
+let S = load(KEY) || blankWeek(load(KEY_PROFILE));
+let openDay = null;
+
+// ---- Calculations ---------------------------------------------------------
+function mins(t){if(!t)return null;const [h,m]=t.split(":").map(Number);return h*60+m}
+function dayHours(d){
+  if(!d.worked) return {h:0,err:""};
+  const a=mins(d.start), b=mins(d.finish);
+  if(a==null||b==null) return {h:0,err:"Enter start and finish times"};
+  if(b<=a) return {h:0,err:"Finish must be after start"};
+  const h=Math.max(0,(b-a)/60-Number(d.brk||0));
+  return {h:Math.round(h*100)/100,onsite:(b-a)/60,err:""};
+}
+function fmt(h){return (Math.round(h*100)/100).toString()}
+function totals(){
+  let t=0,worked=0;S.days.forEach(d=>{const r=dayHours(d);t+=r.h;if(d.worked)worked++});
+  return {t:Math.round(t*100)/100,worked,rest:worked<7,o48:t>48,o60:t>60};
+}
+
+// ---- Rendering ------------------------------------------------------------
+const $=id=>document.getElementById(id);
+function renderDays(){
+  const ws=parseIso(S.weekStart), box=$("days");
+  box.innerHTML="";
+  S.days.forEach((d,i)=>{
+    const date=addDays(ws,i), r=dayHours(d), open=openDay===i;
+    const el=document.createElement("div");el.className="day"+(d.worked?" on":"");
+    el.innerHTML=`<div class="dhead" data-i="${i}">
+        <span class="dname">${DAYS[i]}</span>
+        <span class="ddate">${ddmmyy(date)}${d.worked&&d.job?" · Job "+esc(d.job):""}</span>
+        <span class="dhrs">${d.worked?(r.err?'<span class="err">!</span>':fmt(r.h)+" hrs"):"Off"}</span>
+        <label class="tog"><input type="checkbox" data-f="worked" data-i="${i}" ${d.worked?"checked":""} aria-label="Worked ${DAYS_LONG[i]}">Worked</label>
+      </div>
+      <div class="dbody" ${open&&d.worked?"":"hidden"}>
+        <div class="row">
+          <label class="f">Job No<input type="text" inputmode="numeric" id="job${i}" data-f="job" data-i="${i}" value="${esc(d.job)}"></label>
+          <label class="f">Site<input type="text" id="site${i}" data-f="site" data-i="${i}" value="${esc(d.site)}"></label>
+        </div>
+        <label class="f">Work done<input type="text" id="work${i}" data-f="work" data-i="${i}" value="${esc(d.work)}" placeholder="e.g. Labouring, laying membrane"></label>
+        <div class="row">
+          <label class="f">Start<input type="time" id="start${i}" data-f="start" data-i="${i}" value="${d.start}"></label>
+          <label class="f">Finish<input type="time" id="finish${i}" data-f="finish" data-i="${i}" value="${d.finish}"></label>
+          <label class="f">Break<select id="brk${i}" data-f="brk" data-i="${i}">
+            ${["0","0.5","0.75","1","1.5"].map(v=>`<option value="${v}" ${d.brk===v?"selected":""}>${v==="0"?"None":v==="1"?"1 hour":v==="1.5"?"1½ hours":v==="0.5"?"½ hour":"¾ hour"}</option>`).join("")}
+          </select></label>
+        </div>
+        <div class="calc" id="calc${i}">${calcTxt(d,r)}</div>
+        ${i<6?`<div><button class="btn small" type="button" data-copy="${i}">Copy job &amp; times to ${DAYS[i+1]}</button></div>`:""}
+      </div>`;
+    box.appendChild(el);
+  });
+}
+function calcTxt(d,r){
+  if(r.err) return `<span class="err">${r.err}</span>`;
+  if(!d.start||!d.finish) return "";
+  return `On site ${fmt(r.onsite)} hrs − break ${fmt(Number(d.brk))} = <b>${fmt(r.h)} hrs</b>`;
+}
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+
+function renderChecks(){
+  const T=totals();
+  $("total").textContent=fmt(T.t);
+  $("cRest").innerHTML=T.rest?'<span class="pill ok">Yes</span>':'<span class="pill bad">No — worked all 7 days</span>';
+  $("wRest").hidden=T.rest;
+  $("c48").innerHTML=T.o48?`<span class="pill warn">Yes — ${fmt(T.t)} hrs</span>`:`<span class="pill ok">No — ${fmt(T.t)} hrs</span>`;
+  $("w48").hidden=!T.o48;
+  $("c60").innerHTML=T.o60?`<span class="pill bad">Yes — ${fmt(T.t)} hrs. Stop work and phone the Director today.</span>`:'<span class="pill ok">No</span>';
+  $("w60").hidden=!T.o60;
+  $("wTrain").hidden=S.training!=="Yes";
+  // header row hours update without full re-render
+  document.querySelectorAll(".dhead").forEach(h=>{
+    const i=+h.dataset.i,d=S.days[i],r=dayHours(d);
+    h.querySelector(".dhrs").innerHTML=d.worked?(r.err?'<span class="err">!</span>':fmt(r.h)+" hrs"):"Off";
+    const c=$("calc"+i); if(c) c.innerHTML=calcTxt(d,r);
+  });
+  // old week banner
+  const end=addDays(parseIso(S.weekStart),6), today=new Date();today.setHours(0,0,0,0);
+  $("oldWeek").hidden=!(end<today);
+  $("oldWeekTxt").textContent="w/c "+ddmmyy(parseIso(S.weekStart));
+}
+function renderTop(){
+  $("name").value=S.name;$("company").value=S.company;$("weekStart").value=S.weekStart;
+  document.querySelectorAll('input[name=basis]').forEach(r=>r.checked=r.value===S.basis);
+  document.querySelectorAll('input[name=training]').forEach(r=>r.checked=r.value===S.training);
+  $("restWhy").value=S.restWhy;$("o48Why").value=S.o48Why;$("o60Why").value=S.o60Why;$("trainingWhat").value=S.trainingWhat;
+  $("declared").checked=S.declared;
+  const L=load(KEY_LAST);
+  if(L&&L.week){$("lastTxt").textContent=`w/c ${ddmmyy(parseIso(L.week.weekStart))} · ${fmt(L.total)} hrs · sent ${L.sentAt}`;$("lastResend").hidden=false}
+}
+function renderAll(){renderTop();renderDays();renderChecks();drawSig()}
+
+// ---- Saving ---------------------------------------------------------------
+let saveTimer=null;
+function save(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    const now=new Date();S.updated=now.toISOString();
+    const ok=store(KEY,S);
+    store(KEY_PROFILE,{name:S.name,company:S.company,basis:S.basis});
+    $("savedTxt").textContent=ok?`Saved on this phone · ${now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}`:"Could not save — check the browser isn't in private mode";
+    $("saved").querySelector(".dot").style.background=ok?"#4cc38a":"#ff7b72";
+  },250);
+}
+
+// ---- Events ---------------------------------------------------------------
+document.addEventListener("input",e=>{
+  const t=e.target, f=t.dataset.f;
+  if(f!==undefined){const i=+t.dataset.i;
+    if(f==="worked"){S.days[i].worked=t.checked;openDay=t.checked?i:null;renderDays();renderChecks();save();return}
+    S.days[i][f]=t.value;renderChecks();save();return}
+  const map={name:"name",company:"company",restWhy:"restWhy",o48Why:"o48Why",o60Why:"o60Why",trainingWhat:"trainingWhat"};
+  if(map[t.id]){S[map[t.id]]=t.value;save();return}
+  if(t.name==="basis"){S.basis=t.value;save();return}
+  if(t.name==="training"){S.training=t.value;renderChecks();save();return}
+  if(t.id==="declared"){S.declared=t.checked;save();return}
+});
+document.addEventListener("change",e=>{
+  const t=e.target;
+  if(t.id==="weekStart"&&t.value){S.weekStart=iso(mondayOf(parseIso(t.value)));t.value=S.weekStart;renderDays();renderChecks();save()}
+  if(t.dataset.f==="brk"){S.days[+t.dataset.i].brk=t.value;renderChecks();save()}
+});
+$("days").addEventListener("click",e=>{
+  if(e.target.closest(".tog"))return;
+  const c=e.target.closest("[data-copy]");
+  if(c){const i=+c.dataset.copy,src=S.days[i],dst=S.days[i+1];
+    Object.assign(dst,{worked:true,job:src.job,site:src.site,work:src.work,start:src.start,finish:src.finish,brk:src.brk});
+    openDay=i+1;renderDays();renderChecks();save();return}
+  const h=e.target.closest(".dhead"); if(!h)return;
+  const i=+h.dataset.i;
+  if(!S.days[i].worked){S.days[i].worked=true;openDay=i;renderDays();renderChecks();save();return}
+  openDay=openDay===i?null:i;renderDays();
+});
+
+// ---- Signature pad --------------------------------------------------------
+const cv=$("sig"),ctx=cv.getContext("2d");let drawing=false,last=null;
+function sizeSig(){const r=cv.getBoundingClientRect(),dpr=window.devicePixelRatio||1;cv.width=Math.round(r.width*dpr);cv.height=Math.round(r.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);drawSig()}
+function drawSig(){ctx.clearRect(0,0,cv.width,cv.height);$("sigHint").hidden=!!S.sig;
+  if(S.sig){const im=new Image();im.onload=()=>{const r=cv.getBoundingClientRect();ctx.drawImage(im,0,0,r.width,r.height)};im.src=S.sig}}
+function pt(e){const r=cv.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top}}
+cv.addEventListener("pointerdown",e=>{drawing=true;last=pt(e);cv.setPointerCapture(e.pointerId);$("sigHint").hidden=true});
+cv.addEventListener("pointermove",e=>{if(!drawing)return;const p=pt(e);ctx.strokeStyle="#0b1630";ctx.lineWidth=2.4;ctx.lineCap="round";ctx.lineJoin="round";
+  ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p});
+function endSig(){if(!drawing)return;drawing=false;S.sig=cv.toDataURL("image/png");save()}
+cv.addEventListener("pointerup",endSig);cv.addEventListener("pointercancel",endSig);
+$("sigClear").addEventListener("click",()=>{S.sig="";drawSig();save()});
+window.addEventListener("resize",()=>{clearTimeout(window._rz);window._rz=setTimeout(sizeSig,150)});
+
+// ---- PDF ------------------------------------------------------------------
+function fileName(week,partial){
+  const nm=(week.name||"Operative").trim().replace(/[\\/:*?"<>|]/g,"");
+  return `${FORM.ref} ${FORM.ver} wc ${dashDate(parseIso(week.weekStart))} ${nm}${partial?" (part week)":""}.pdf`;
+}
+function buildPdf(week,partial){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:"mm",format:"a4"});
+  const NAVY=[20,35,63],GOLD=[184,146,58],W=210,M=14;
+  const prev=S;S=week;const T=totals();S=prev;
+  const ws=parseIso(week.weekStart);
+  let y=0;
+  function space(h){if(y+h>282){doc.addPage();y=16}}
+  function heading(t){space(12);doc.setFont("helvetica","bold");doc.setFontSize(11);doc.setTextColor(...NAVY);doc.text(t,M,y);doc.setDrawColor(...GOLD);doc.setLineWidth(0.5);doc.line(M,y+1.5,W-M,y+1.5);y+=6;doc.setTextColor(20,20,20)}
+  function para(t,size=8.5,style="normal"){doc.setFont("helvetica",style);doc.setFontSize(size);const lines=doc.splitTextToSize(t,W-2*M);space(lines.length*size*0.42+2);doc.text(lines,M,y);y+=lines.length*size*0.42+2}
+  const tbl={theme:"grid",styles:{fontSize:8.5,cellPadding:1.8,lineColor:[200,204,214],textColor:[20,20,20]},headStyles:{fillColor:NAVY,textColor:255,fontStyle:"bold"},margin:{left:M,right:M}};
+
+  doc.setFillColor(...NAVY);doc.rect(0,0,W,22,"F");doc.setFillColor(...GOLD);doc.rect(0,22,W,1.2,"F");
+  doc.setTextColor(255);doc.setFont("helvetica","bold");doc.setFontSize(15);doc.text("WEEKLY SITE HOURS RECORD",M,11);
+  doc.setFont("helvetica","normal");doc.setFontSize(9);doc.text("Build & Cover Ltd | Document Reference: "+FORM.ref,M,17);
+  y=28;
+  doc.autoTable({...tbl,startY:y,head:[["Reference","Version","Issue Date","Review Date","Approved By","Status"]],body:[[FORM.ref,FORM.ver,FORM.issue,FORM.review,FORM.by,FORM.status]]});
+  y=doc.lastAutoTable.finalY+4;
+  para("Complete one sheet for every week you work on a Build & Cover Ltd contract — priced work or daywork — and return it with your weekly invoice (received by 5:00 pm Monday). It records the hours actually worked so that the company can manage fatigue and working time, confirm that earnings on priced work are at or above the National Living Wage equivalent, and keep site time records (HR-POL-005 §5, §6, §8). Times should match the client's site sign-in register. It does not change the self-employed basis of your engagement or the price agreed for the work.",8);
+  if(partial){doc.setTextColor(179,38,30);para("PART-WEEK COPY sent "+new Date().toLocaleString("en-GB",{dateStyle:"short",timeStyle:"short"})+" — a back-up of the week so far, not the final signed record.",9,"bold");doc.setTextColor(20,20,20)}
+  y+=1;heading("1. Operative and week");
+  doc.autoTable({...tbl,startY:y,columnStyles:{0:{fontStyle:"bold",cellWidth:62,fillColor:[243,244,247]}},body:[
+    ["Operative name",week.name||""],["Engaged through (sole trader / sub-contract company)",week.company||""],
+    ["Week commencing (Monday)",longDate(ws)],["Basis of work this week",week.basis||"Not stated"]]});
+  y=doc.lastAutoTable.finalY+5;
+  heading("2. Hours worked");
+  const rows=week.days.map((d,i)=>{const date=ddmmyy(addDays(ws,i));
+    if(!d.worked) return [DAYS[i],date,"–","–","Off","","","",""];
+    const r=dayHours(d);return [DAYS[i],date,d.job,d.site,d.work,d.start,d.finish,fmt(Number(d.brk)),r.err?"Check":fmt(r.h)]});
+  doc.autoTable({...tbl,startY:y,head:[["Day","Date","Job No","Site","Work","Start","Finish","Break","Hours"]],body:rows,
+    foot:[[{content:"TOTAL HOURS (one break deducted per day as shown)",colSpan:8,styles:{halign:"right"}},fmt(T.t)]],
+    footStyles:{fillColor:[243,244,247],textColor:[20,20,20],fontStyle:"bold"},
+    columnStyles:{0:{cellWidth:11},1:{cellWidth:17},2:{cellWidth:15},5:{cellWidth:13},6:{cellWidth:13},7:{cellWidth:13},8:{cellWidth:14,halign:"right",fontStyle:"bold"}}});
+  y=doc.lastAutoTable.finalY+5;
+  heading("3. Weekly check");
+  doc.autoTable({...tbl,startY:y,head:[["Check","Answer","Reason"]],columnStyles:{0:{cellWidth:80},1:{cellWidth:28,fontStyle:"bold"}},body:[
+    ["Rest day(s) taken this week (at least one full day in every seven)",T.rest?"Yes":"No",T.rest?"":week.restWhy],
+    ["More than 48 hours worked this week",T.o48?"Yes":"No",T.o48?(week.o48Why+" (to be reviewed by the Director)"):""],
+    ["More than 60 hours worked in any seven days (absolute limit — HR-POL-005 §6; a 48-hour opt-out does not lift it)",T.o60?"Yes":"No",T.o60?week.o60Why:""],
+    ["Training / toolbox talk attended this week (paid at the agreed rate)",week.training||"Not stated",week.training==="Yes"?week.trainingWhat:""]]});
+  y=doc.lastAutoTable.finalY+5;
+  heading("4. Declaration and signatures");
+  para("Operative: I confirm that the hours above are a true record of the time I worked, that I took the breaks shown, and that I was not required to work any hours I had not agreed to. I understand that I can raise any concern about hours, pay or treatment with the Director or under the Whistleblowing Policy (ETH-POL-003) without detriment.",8);
+  para("Declaration ticked on phone form: "+(week.declared?"Yes":"No"),8,"bold");
+  space(42);
+  const sigDate=new Date().toLocaleDateString("en-GB");
+  doc.autoTable({...tbl,startY:y,head:[["","Name","Signature","Date"]],body:[["Operative",week.name||"","",week.sig?sigDate:""],["Checked for Build & Cover Ltd","G. Alcock, Director","",""]],
+    columnStyles:{0:{cellWidth:44,fontStyle:"bold"},2:{cellWidth:60}},bodyStyles:{minCellHeight:16},
+    didDrawCell:(c)=>{if(c.section==="body"&&c.row.index===0&&c.column.index===2&&week.sig){try{doc.addImage(week.sig,"PNG",c.cell.x+1,c.cell.y+1,c.cell.width-2,c.cell.height-2)}catch(e){}}}});
+  y=doc.lastAutoTable.finalY+4;
+  para("Filing: kept with the operative's weekly invoice and the CIS / payroll records, retained for the period required by HR-POL-005 §8 and available to social and client auditors on request. Operatives of a sub-contract company complete this record in addition to any record kept by their own company (HR-FORM-011 clause 6). Completed on the Build & Cover phone form; times entered by the operative.",7);
+  const n=doc.getNumberOfPages();
+  for(let p=1;p<=n;p++){doc.setPage(p);doc.setFontSize(7.5);doc.setTextColor(110);doc.setFont("helvetica","normal");
+    doc.text(`Weekly Site Hours Record • ${FORM.ref} ${FORM.ver} • Build & Cover Ltd`,M,291);doc.text(`Page ${p} of ${n}`,W-M,291,{align:"right"})}
+  return {doc,total:T.t};
+}
+
+// ---- Sending --------------------------------------------------------------
+function problems(partial){
+  const p=[];
+  if(!S.name.trim())p.push("Enter your name (section 1).");
+  if(partial)return p;
+  if(!S.company.trim())p.push("Enter who you're engaged through (section 1).");
+  if(!S.basis)p.push("Pick the basis of work (section 1).");
+  const T=totals();
+  if(!T.worked)p.push("Tick at least one day worked (section 2).");
+  S.days.forEach((d,i)=>{if(d.worked){const r=dayHours(d);if(r.err)p.push(`${DAYS_LONG[i]}: ${r.err.toLowerCase()}.`);if(!d.job.trim()&&!d.site.trim())p.push(`${DAYS_LONG[i]}: enter the job number or site.`)}});
+  if(!T.rest&&!S.restWhy.trim())p.push("Give a reason for no rest day (section 3).");
+  if(T.o48&&!S.o48Why.trim())p.push("Give a reason for working over 48 hours (section 3).");
+  if(T.o60&&!S.o60Why.trim())p.push("Give a reason for working over 60 hours (section 3).");
+  if(!S.training)p.push("Answer the training / toolbox talk question (section 3).");
+  if(!S.declared)p.push("Tick the declaration (section 4).");
+  if(!S.sig)p.push("Sign in the box (section 4).");
+  return p;
+}
+function showPanel(html){$("sheet").innerHTML=html;$("panel").hidden=false}
+function hidePanel(){$("panel").hidden=true}
+$("panel").addEventListener("click",e=>{if(e.target.id==="panel")hidePanel()});
+
+async function send(partial,weekOverride){
+  const week=weekOverride||S;
+  if(!weekOverride){const p=problems(partial);
+    if(p.length){showPanel(`<h3>Nearly there</h3><p class="note">Please sort these out first:</p><ol>${p.map(x=>`<li>${esc(x)}</li>`).join("")}</ol><button class="btn primary" type="button" data-close>OK</button>`);return}}
+  if(!window.jspdf){showPanel(`<h3>No signal</h3><p>The PDF maker needs a data connection. Your entries are saved. Try again when you have signal.</p><button class="btn primary" type="button" data-close>OK</button>`);return}
+  try{navigator.clipboard&&await navigator.clipboard.writeText(SEND_TO)}catch(e){}
+  const {doc,total}=buildPdf(week,partial);
+  const name=fileName(week,partial), blob=doc.output("blob");
+  const file=new File([blob],name,{type:"application/pdf"});
+  const subject=name.replace(/\.pdf$/,"");
+  const text=`${subject} — ${fmt(total)} hrs. Please send to ${SEND_TO}`;
+  let shared=false;
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    showPanel(`<h3>Send it</h3><ol><li>Tap <b>Share PDF</b> and choose your email app (Gmail, Outlook…).</li><li>In the <b>To</b> box, paste or type:</li></ol><div class="addr">${SEND_TO}</div><p class="note">The address has been copied for you — press and hold in the To box and choose Paste.</p><button class="btn primary" type="button" id="doShare">Share PDF</button><button class="btn" type="button" data-close>Cancel</button>`);
+    $("doShare").onclick=async()=>{try{await navigator.share({files:[file],title:subject,text});shared=true;afterSend(partial,week,total,weekOverride)}catch(e){if(e.name!=="AbortError")fallback()}};
+  } else fallback();
+  function fallback(){
+    doc.save(name);
+    const mail=`mailto:${SEND_TO}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent("Timesheet attached.\n\n"+text)}`;
+    showPanel(`<h3>PDF saved</h3><p>The PDF is in your <b>Downloads</b> as:<br><b>${esc(name)}</b></p><ol><li>Tap <b>Open email</b>.</li><li>Attach the PDF from Downloads (paperclip icon).</li><li>Press Send.</li></ol><div class="addr">${SEND_TO}</div><a class="btn primary" style="text-align:center;text-decoration:none" href="${mail}" id="openMail">Open email</a><button class="btn" type="button" id="didSend">I've sent it</button><button class="btn" type="button" data-close>Not now</button>`);
+    $("didSend").onclick=()=>afterSend(partial,week,total,weekOverride);
+  }
+}
+function afterSend(partial,week,total,weekOverride){
+  const when=new Date().toLocaleString("en-GB",{weekday:"short",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
+  if(partial||weekOverride){if(partial){S.sentPart=when;save()}
+    showPanel(`<h3>Done</h3><p>Copy sent ${when}. Keep filling in the week as normal.</p><button class="btn primary" type="button" data-close>OK</button>`);return}
+  showPanel(`<h3>Week sent</h3><p>Did the email go? If so, clear the sheet ready for next week. A copy of this week stays on the phone under <b>Last week</b>.</p><button class="btn gold" type="button" id="newWeek">Yes — start next week</button><button class="btn" type="button" data-close>Not yet</button>`);
+  $("newWeek").onclick=()=>{store(KEY_LAST,{week:JSON.parse(JSON.stringify(S)),total,sentAt:when});startNewWeek(true);hidePanel()};
+}
+function startNewWeek(advance){
+  const prevStart=parseIso(S.weekStart);
+  const prof={name:S.name,company:S.company,basis:S.basis};
+  S=blankWeek(prof);
+  const thisMon=mondayOf(new Date());
+  if(advance){const next=addDays(prevStart,7);S.weekStart=iso(next>thisMon?next:thisMon)}
+  openDay=null;store(KEY,S);renderAll();save();window.scrollTo(0,0);
+}
+$("sheet").addEventListener("click",e=>{if(e.target.hasAttribute("data-close"))hidePanel()});
+$("sendPart").addEventListener("click",()=>send(true));
+$("sendFinal").addEventListener("click",()=>send(false));
+$("lastResend").addEventListener("click",()=>{const L=load(KEY_LAST);if(L)send(false,L.week)});
+$("oldNew").addEventListener("click",()=>{
+  showPanel(`<h3>Start a new week?</h3><p>This clears the days on this sheet. Only do this if the old week has been sent. A copy is kept under <b>Last week</b>.</p><button class="btn gold" type="button" id="confNew">Yes, start new week</button><button class="btn" type="button" data-close>Cancel</button>`);
+  $("confNew").onclick=()=>{store(KEY_LAST,{week:JSON.parse(JSON.stringify(S)),total:totals().t,sentAt:"(cleared "+new Date().toLocaleDateString("en-GB")+")"});startNewWeek(false);hidePanel()};
+});
+
+// ---- Start ----------------------------------------------------------------
+(function init(){
+  const todayIdx=(new Date().getDay()+6)%7;
+  if(iso(mondayOf(new Date()))===S.weekStart) openDay=S.days[todayIdx].worked?todayIdx:null;
+  renderAll();requestAnimationFrame(sizeSig);
+})();
+</script>
+</body>
+</html>
