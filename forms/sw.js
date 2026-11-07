@@ -1,5 +1,5 @@
 /* B&C Forms – network first, falls back to the saved copy when there is no signal. */
-const C="bcforms-v1";
+const C="bcforms-v2";
 self.addEventListener("install",e=>self.skipWaiting());
 self.addEventListener("activate",e=>e.waitUntil(self.clients.claim()));
 self.addEventListener("fetch",e=>{if(e.request.method!=="GET")return;

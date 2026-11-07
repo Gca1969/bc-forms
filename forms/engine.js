@@ -8,6 +8,9 @@
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const pad=n=>String(n).padStart(2,"0");
+/* "All forms" goes back to the menu this phone last used (operatives.html or the management index.html).
+   Default is the operatives menu, so an operative is never sent to the management menu. */
+const hubUrl=()=>{try{const h=localStorage.getItem("bc_hub");if(h==="index.html"||h==="operatives.html")return h}catch(e){}return "operatives.html"};
 const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const parseIso=s=>{if(!s)return null;const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
 const uk=s=>{const d=parseIso(s);return d?`${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`:""};
@@ -342,7 +345,7 @@ window.BC={api,start(form){
   S.v=S.v||{};S.chk=S.chk||{};S.na=S.na||{};S.photos=S.photos||{};S.sig=S.sig||{};S.eq=S.eq||{items:[],day:0};S.iss=S.iss||{};
   if(F.init)F.init(S,api);
   document.title="B&C "+(F.short||F.title);
-  document.body.insertAdjacentHTML("afterbegin",`<header><div class="hwrap"><div class="co"><a href="index.html">Build &amp; Cover Ltd · all forms</a></div><h1>${esc(F.title)}</h1><div class="ref">${esc(F.ref)} ${esc(F.ver)} · ${esc(F.tag||"")}</div><div class="saved"><span class="dot"></span><span id="savedTxt">Saves automatically on this phone</span></div></div></header><main id="main"></main>
+  document.body.insertAdjacentHTML("afterbegin",`<header><div class="hwrap"><div class="co"><a href="${hubUrl()}">Build &amp; Cover Ltd · all forms</a></div><h1>${esc(F.title)}</h1><div class="ref">${esc(F.ref)} ${esc(F.ver)} · ${esc(F.tag||"")}</div><div class="saved"><span class="dot"></span><span id="savedTxt">Saves automatically on this phone</span></div></div></header><main id="main"></main>
    <div class="bar"><div class="barin"><div class="prog" id="prog"></div><div class="btns"><button class="btn" type="button" id="sendPart">Send copy so far</button><button class="btn primary" type="button" id="sendFinal">Finish &amp; send</button></div></div></div>
    <div class="panel" id="panel" hidden><div class="sheet" id="sheet"></div></div>`);
   $("panel").addEventListener("click",e=>{if(e.target.id==="panel")hidePanel()});

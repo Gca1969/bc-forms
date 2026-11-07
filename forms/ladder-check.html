@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>B&amp;C Ladder Pre-Use Check</title><meta name="theme-color" content="#14233f">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="engine.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="engine.js"></script></head><body>
+<script>
+/* New online form – no ladder pre-use form exists in POLICIES UPDATE (checked 07/11/2026).
+   Checks taken from HSE leaflet INDG455 "Safe use of ladders and stepladders" (EXT-REF-004),
+   HS-POL-003 Working at Height Policy and HS-FORM-004 Section C (monthly ladder check, which this does not replace). */
+const C=(id,q)=>({id,q});
+const desc=S=>(S.v.ltype||"Ladder")+(S.v.lmake?" – "+S.v.lmake:"");
+BC.start({
+  key:"laddercheck",ref:"HS-FORM-015",refNote:"proposed reference – to be confirmed",ver:"v0.1 draft",issue:"07/11/2026",review:"22/04/2027",status:"Draft – online form, awaiting registration",
+  title:"Ladder & Stepladder Pre-Use Check",short:"Ladder Pre-Use Check",tag:"every day before use · one sheet per ladder per week",
+  dateField:"wc",keep:["user","ltype","lid","lmake","job"],
+  nameSuffix:S=>"ID "+(S.v.lid||"")+" wc",
+  init(S,api){if(!S.v.wc)S.v.wc=api.iso(api.mondayOf(new Date()));if(!S.eq.items.length)S.eq.items.push({uid:"lad",desc:desc(S),eid:S.v.lid||"",r:{},ini:{},c:""})},
+  onField(id,S){const it=S.eq.items[0];if(it){it.eid=S.v.lid||"";it.desc=desc(S)}},
+  onNew(S,old){S.v.wc=BC.api.iso(BC.api.mondayOf(new Date()));S.eq.items=[{uid:"lad"+Date.now(),desc:desc(old),eid:old.v.lid||"",r:{},ini:{},c:""}]},
+  banner(S){return `<div class="banner"><div><b>Any fault = do not use it.</b> Label it DO NOT USE and fill in the <a href="ladder-defect.html">Ladder Defect Notice</a>.</div></div>`},
+  pdfIntro:"Pre-use check carried out by the user before the ladder or stepladder is used each day, as set out in the HSE leaflet INDG455 Safe use of ladders and stepladders (EXT-REF-004) and HS-POL-003 Working at Height Policy. Ladders are used only for short-duration (up to 30 minutes), light work where a risk assessment shows they are justified. Any ladder that fails a check is taken out of use, labelled DO NOT USE and reported on the Ladder Defect Notice. The monthly detailed check is recorded on HS-FORM-004 Section C; each ladder carries a unique ID listed in HS-FORM-004 Section J.",
+  pdfKey:"Key: OK = check passed. FAULT = check failed – ladder not used, labelled DO NOT USE and Ladder Defect Notice completed. n/a = not applicable to this type (e.g. platform on a straight ladder). Blank = not used that day.",
+  blocks:[
+    {type:"info",html:"Check the ladder <b>every day before you use it</b>. Ladders are for <b>short jobs (up to 30 minutes) and light work</b> only. If anything is wrong: <b>don't use it</b>, label it DO NOT USE, and fill in the Ladder Defect Notice."},
+    {type:"fields",id:"det",title:"Ladder, user and week",fields:[
+      {id:"ltype",label:"Type",kind:"select",req:true,options:["Ladder (leaning / extension)","Stepladder","Combination / multi-purpose ladder","Roof ladder","Step stool / hop-up"]},
+      {id:"lid",label:"Ladder ID number (on its label)",req:true},
+      {id:"lmake",label:"Make / size (e.g. Lyte 3-section 3.0 m)"},
+      {id:"user",label:"User name",req:true},{id:"wc",label:"Week commencing (Monday)",kind:"date",req:true},{id:"job",label:"Job number / site"}]},
+    {type:"equip",id:"chk",title:"Daily pre-use checks",weekField:"wc",fixed:true,catalogue:[],
+      intro:"Pick the day, then tick each check. “All OK” fills the blanks for that day – then change any that aren't right.",
+      checks:[C("l1","Label and ID present and legible – BS EN 131 Professional (or Class 1 Industrial)"),C("l2","Stiles – not bent, split, buckled, cracked or damaged"),C("l3","Rungs / treads – none bent, missing, loose or worn; clean and not slippery"),C("l4","Feet – all present, not worn, damaged or split; clean"),C("l5","Locking bars / stays / latches (stepladder, extension or combination ladder) – working, not bent or worn"),C("l6","Stepladder platform – not split, buckled or loose"),C("l7","No paint, mud, oil, grease or ice on the ladder or the user's boots"),C("l8","Right ladder for the job – short duration, light work, can keep three points of contact"),C("l9","Set up on firm, level ground; leaning ladder at 1 in 4 (75°), tied or footed, 1 m above the landing; stepladder fully opened and locked")]},
+    {type:"sigs",id:"sg",title:"Sign-off",sigs:[{id:"usr",label:"User"},{id:"mgr",label:"Manager / Supervisor (end of week)",optional:true,comments:"Manager / Supervisor's comments – actions taken, by whom, when"}]}
+  ]
+});
+</script></body></html>
