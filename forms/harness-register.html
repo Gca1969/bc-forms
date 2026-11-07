@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>B&amp;C Harness & Lanyard Registration</title><meta name="theme-color" content="#14233f">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="engine.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="engine.js"></script></head><body>
+<script>
+BC.start({
+  key:"harnessreg",ref:"HS-FORM-014",refNote:"proposed reference – to be confirmed",ver:"v0.1 draft",issue:"07/11/2026",review:"22/04/2027",status:"Draft – online form, awaiting registration",
+  title:"Harness & Lanyard Registration and Conformity Record",short:"Harness Lanyard Registration",tag:"once, before a new item is first used",
+  dateField:"rdate",keep:["by_name","by_pos"],
+  nameSuffix:S=>"ID "+(S.v.sid||""),
+  init(S,api){if(!S.v.rdate)S.v.rdate=api.iso(new Date())},
+  pdfIntro:"Every harness, lanyard and other fall-protection item must be registered on this form before its first use. It records the item's identity, the evidence of conformity (CE / UKCA marking, the standard, the manufacturer's declaration of conformity or certificate) and the first inspection. Once registered, the item is added to the drop-down list on the Safety Harness & Lanyard Pre-Use Inspection Record and to the 6-monthly thorough examination list (Liftsafe Solutions). An item that cannot be registered (no marking, no ID, unknown history) must not be used.",
+  blocks:[
+    {type:"info",html:"Use this <b>once for each new harness or lanyard</b>, before it's used. Photograph the <b>label</b> and the <b>certificate / declaration of conformity</b>. Graham then adds it to the drop-down on the daily check form."},
+    {type:"fields",id:"itm",title:"Item details",photos:"Photo of the label / ID tag",fields:[
+      {id:"kind",label:"Type",kind:"select",req:true,options:["Full body harness","Shock-absorbing (fall-arrest) lanyard","Restraint lanyard","Twin-tail lanyard","Retractable fall-arrest block","Working rope / rope grab","Rescue kit","Other"]},
+      {id:"make",label:"Make",req:true},{id:"model",label:"Model",req:true},{id:"sid",label:"Serial / ID number",req:true},
+      {id:"size",label:"Size"},{id:"mfd",label:"Date of manufacture",placeholder:"MM/YYYY"},
+      {id:"std",label:"Standard marked (e.g. EN361, EN355, EN354, EN360)",req:true},
+      {id:"life",label:"Manufacturer's maximum life / expiry (if stated)"},
+      {id:"supplier",label:"Supplier and date bought"},{id:"firstuse",label:"Date first put into use",kind:"date"}]},
+    {type:"checks",id:"conf",title:"Conformity and first inspection",items:[
+      {id:"c1",q:"CE or UKCA marking present on the item"},
+      {id:"c2",q:"Manufacturer's declaration of conformity or certificate received and photographed"},
+      {id:"c3",q:"Manufacturer's user instructions received"},
+      {id:"c4",q:"Item new, unused, in original packaging (or history known and acceptable)"},
+      {id:"c5",q:"First visual inspection passed – webbing, stitching, fittings, energy absorber, labels"},
+      {id:"c6",q:"Compatible with the harnesses / anchors it will be used with"},
+      {id:"c7",q:"Added to the Liftsafe 6-monthly thorough examination list",no:"Tell Graham – book it with the next examination"}]},
+    {type:"photos",id:"doc",title:"Certificate / declaration of conformity",intro:"Photograph every page of the certificate or declaration of conformity and the instructions' front page."},
+    {type:"sigs",id:"sg",title:"Registered by",sigs:[{id:"by",label:"Registered by"},{id:"dir",label:"Approved for use (Director)",optional:true}]}
+  ]
+});
+</script></body></html>

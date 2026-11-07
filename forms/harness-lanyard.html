@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>B&amp;C Harness & Lanyard Pre-Use Inspection</title><meta name="theme-color" content="#14233f">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="engine.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="engine.js"></script></head><body>
+<script>
+/* Harness & lanyard register – from Liftsafe Solutions report LSP4335, thorough examination 14/10/2026,
+   next thorough examination due 14/04/2027 (6-monthly). ADD NEW ITEMS HERE once registered on the
+   Harness & Lanyard Registration form. */
+const NEXT="2027-04-14";
+const REG=[
+ {id:"1649",d:"Lanyard – JSP FAR0314 shock-absorbing rope lanyard with scaffold hook (EN355, mfd 06/2024)",kind:"Lanyard"},
+ {id:"2743",d:"Lanyard – JSP FAR0313 fall-restraint rope lanyard 1.8 m (EN354, mfd 06/2025)",kind:"Lanyard"},
+ {id:"26067477",d:"Harness – G-Force P-50 safety harness XXL (EN361/EN358, mfd 02/2026)",kind:"Harness"},
+ {id:"26067475",d:"Harness – G-Force P-50 safety harness XXL (EN361/EN358, mfd 02/2026)",kind:"Harness"},
+ {id:"25531395",d:"Harness – G-Force P-11 safety harness M–XL (EN361, mfd 06/2025)",kind:"Harness"},
+ {id:"2272",d:"Harness – JSP FAR0301 safety harness (EN361, mfd 06/2025)",kind:"Harness"},
+ {id:"1515",d:"Harness – JSP safety harness (EN361, mfd 06/2024) – confirm model on the label",kind:"Harness"},
+ {id:"3507 0307",d:"Harness – Aresta AR-12011S/15 M–XXL with fixed restraint lanyard (EN361, mfd 04/2022)",kind:"Harness"},
+ {id:"3507 0945",d:"Harness – Aresta AR-12011S/15 M–XXL with fixed restraint lanyard (EN361, mfd 04/2022)",kind:"Harness"},
+ {id:"3507 1091",d:"Harness – Aresta AR-12011S/15 M–XXL with fixed restraint lanyard (EN361, mfd 04/2022)",kind:"Harness"}
+];
+const p=new URLSearchParams(location.search);const sel=p.get("id")||"";
+const C=(id,q)=>({id,q});
+BC.start({
+  key:"harness",keyParam:"id",ref:"HS-FORM-013",refNote:"proposed reference – to be confirmed",ver:"v0.1 draft",issue:"07/11/2026",review:"22/04/2027",status:"Draft – online form, awaiting registration",
+  title:"Safety Harness & Lanyard Pre-Use Inspection Record",short:"Harness Lanyard Pre-Use",tag:"daily before use · one sheet per item per week",
+  dateField:"wc",keep:["user","job","item"],
+  nameSuffix:S=>"ID "+(S.v.item||"")+" wc",
+  init(S,api){if(sel&&!S.v.item)S.v.item=sel;if(!S.v.wc)S.v.wc=api.iso(api.mondayOf(new Date()));
+    const r=REG.find(x=>x.id===S.v.item);S.eq.items=r?[{uid:"h"+r.id.replace(/\s/g,""),desc:r.d,eid:r.id,r:(S.eq.items[0]||{}).r||{},ini:(S.eq.items[0]||{}).ini||{},c:(S.eq.items[0]||{}).c||""}]:[]},
+  onField(id,S){if(id==="item"&&S.v.item&&S.v.item!==sel){location.search="?id="+encodeURIComponent(S.v.item)}},
+  onNew(S,old){S.v.wc=BC.api.iso(BC.api.mondayOf(new Date()));const r=REG.find(x=>x.id===old.v.item);if(r)S.eq.items=[{uid:"h"+Date.now(),desc:r.d,eid:r.id,r:{},ini:{},c:""}]},
+  banner(S){const api=BC.api;let h="";
+    if(!S.v.item)h+=`<div class="banner"><div><b>Pick the harness or lanyard first</b> (section 1) – the ID number is on its label.</div></div>`;
+    const n=api.daysTo(NEXT);if(n<0)h+=`<div class="banner red"><div><b>6-monthly thorough examination overdue</b> (was due ${api.uk(NEXT)}). DO NOT USE – tell Graham.</div></div>`;else if(n<=30)h+=`<div class="banner"><div><b>Thorough examination due ${api.uk(NEXT)}</b> – ${n} days.</div></div>`;
+    h+=`<div class="banner"><div><b>Not on the list?</b> A new or unlisted harness or lanyard must NOT be used until it is registered on the <a href="harness-register.html">Harness &amp; Lanyard Registration form</a> (with its certificate / declaration of conformity) and added to this list.</div></div>`;
+    return h},
+  pdfIntro:"Guidelines: it is the user's responsibility to complete this sheet before using the harness or lanyard. This is a visible check: OK is recorded where no faults are found, or FAULT where a fault is found. In that case the Manager/Supervisor must be informed immediately and the item taken out of use. The inspections are mandatory and must be carried out on a daily pre-use basis. The Manager/Supervisor section is completed at the end of each week before the record is filed. Thorough examination: 6-monthly by a competent person (Liftsafe Solutions, report LSP4335, 14/10/2026; next due 14/04/2027). Any new harness or lanyard must be registered (Harness & Lanyard Registration form) before first use.",
+  pdfKey:"Key: OK = no fault found. FAULT = fault found – item taken out of use and Manager/Supervisor told. n/a = not applicable to this item (e.g. energy absorber on a restraint lanyard). Blank = not used that day.",
+  blocks:[
+    {type:"info",html:"Pick the item by its <b>ID number</b> (on the label). Each harness and lanyard has its own sheet. Check it <b>every day before use</b>. A fault = <b>stop, take it out of use and tell Graham</b>."},
+    {type:"fields",id:"det",title:"Item, user and week",fields:[
+      {id:"item",label:"Harness / lanyard ID number",kind:"select",req:true,options:REG.map(r=>({v:r.id,l:r.id+" – "+r.d}))},
+      {id:"user",label:"User name",req:true},{id:"wc",label:"Week commencing (Monday)",kind:"date",req:true},{id:"job",label:"Job number / site"}]},
+    {type:"equip",id:"chk",title:"Daily pre-use checks",weekField:"wc",fixed:true,catalogue:[],
+      intro:"Pick the day, then tick each check. “All OK” fills the blanks for that day – then change any that aren't right.",
+      checks:[C("h1","Webbing edges – for nicks, cuts or abrasions (1 mm or more)"),C("h2","Webbing surface – for abrasions across webbing face and loops"),C("h3","Stitching – for damage along the webbing"),C("h4","Lanyard webbing, rope / cable – for knots (other than those intended by the manufacturer)"),C("h5","For damage to cable / rope"),C("h6","Signs of chemical attack – softening, flaking or discolouring of fibres"),C("h7","Heat or friction damage – fibres with a glazed appearance that may feel hard"),C("h8","UV degradation – loss of colour"),C("h9","Energy absorber has not been partially deployed"),C("h10","Damage to the sheath of the energy absorber"),C("h11","Function of mechanical arrest system (if applicable)"),C("h12","Heavy soiling or contamination which may cause malfunction"),C("h13","Damaged or deformed fittings – karabiners, screw-link connectors, hooks etc."),C("h14","Harness buckles, adjusters and D-rings secure and working (harness only)"),C("h15","Label legible – ID, standard and thorough examination in date")]},
+    {type:"sigs",id:"sg",title:"Sign-off",sigs:[{id:"usr",label:"User"},{id:"mgr",label:"Manager / Supervisor (end of week)",optional:true,comments:"Manager / Supervisor's comments – actions taken, by whom, when (time and date)"}]}
+  ],
+  validate(S,p){if(!REG.find(x=>x.id===S.v.item))p.push("Section 1: pick a registered harness / lanyard. Unregistered items must not be used.")}
+});
+</script></body></html>
