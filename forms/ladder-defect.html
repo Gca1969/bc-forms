@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>B&amp;C Ladder Defect Notice</title><meta name="theme-color" content="#14233f">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="engine.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="engine.js"></script></head><body>
+<script>
+BC.start({
+  key:"ladder",ref:"HS-FORM-011",refNote:"proposed reference – to be confirmed",ver:"v0.1 draft",issue:"07/11/2026",review:"22/04/2027",status:"Draft – online form, awaiting registration",
+  title:"Defect Notice – Ladders & Stepladders",short:"Ladder Defect Notice",tag:"only when a defect is found",
+  dateField:"when_d",keep:["by","by_pos","to","to_pos"],
+  nameSuffix:S=>(S.v.lid||"no ID"),
+  init(S,api){if(!S.v.when_d){S.v.when_d=api.iso(new Date());const t=new Date();S.v.when_t=String(t.getHours()).padStart(2,"0")+":"+String(t.getMinutes()).padStart(2,"0")}},
+  pdfIntro:"The following item has been subject to a pre-use check and found to be defective. It has been taken out of use and labelled DO NOT USE until the responsible person has decided the action (repair by a competent person, or destroy so it cannot be used, and remove from the register).",
+  blocks:[
+    {type:"info",html:"Use this <b>only when a ladder or stepladder fails its pre-use check</b>. Stop using it, label it <b>DO NOT USE</b>, take photos of the fault and of the ID label, then send this to Graham."},
+    {type:"fields",id:"itm",title:"Defective item",photos:"Photo of the defect / ID label",fields:[
+      {id:"ltype",label:"Type",kind:"select",req:true,options:["Ladder","Stepladder","Combination / multi-purpose ladder","Roof ladder","Step stool / hop-up"]},
+      {id:"lid",label:"Identification number",req:true},
+      {id:"loc",label:"Location (address / job)",kind:"textarea",req:true},
+      {id:"defect",label:"Details of defect(s) found",kind:"textarea",req:true,placeholder:"e.g. bent stile, cracked rung, missing foot, damaged locking bar…"},
+      {id:"quar",label:"Taken out of use and labelled DO NOT USE",kind:"check"}]},
+    {type:"fields",id:"rep",title:"Reported by and to",fields:[
+      {id:"by",label:"Name of user making the report",req:true},{id:"by_pos",label:"Position within the company",req:true},
+      {id:"when_d",label:"Date of report",kind:"date",req:true},{id:"when_t",label:"Time of report",kind:"time",req:true},
+      {id:"to",label:"Submitted to (name)",req:true,placeholder:"e.g. Graham Alcock"},{id:"to_pos",label:"Position within the company",placeholder:"e.g. Director"}]},
+    {type:"fields",id:"rp",title:"Section for the responsible person",intro:"Can be filled in later – send a copy now with “Send copy so far”, then finish this part when the action is decided.",fields:[
+      {id:"action",label:"Action taken",kind:"select",options:["Repaired by a competent person and re-inspected","Destroyed so it cannot be used and removed from the register","Returned to the supplier / hire company","Quarantined – awaiting decision"]},
+      {id:"action_det",label:"Details of action taken",kind:"textarea"}]},
+    {type:"sigs",id:"sg",title:"Signatures",sigs:[{id:"usr",label:"User making the report"},{id:"rsp",label:"Responsible person",optional:true}]}
+  ],
+  validate(S,p,partial){if(!partial&&!S.v.action)p.push("Section 3: choose the action taken – or use “Send copy so far” now and finish later.");if(!partial&&!(S.photos["b_itm"]||[]).length)p.push("Section 1: add at least one photo of the defect.")}
+});
+</script></body></html>

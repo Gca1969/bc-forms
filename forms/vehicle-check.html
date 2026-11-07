@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>B&amp;C Vehicle Check Sheet</title><meta name="theme-color" content="#14233f">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="engine.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="engine.js"></script></head><body>
+<script>
+/* Company vehicles. Starting dates from the paper sheets of 07/11/2026.
+   The driver confirms or updates tax / MOT each week; the new dates are remembered on the phone for that van. */
+const VEHICLES={
+  "YS72HGD":{label:"YS72HGD",tax:"2026-11-01",mot:"2026-11-25"},
+  "WV20MYA":{label:"WV20MYA – Ford Transit Custom",tax:"2027-02-01",mot:"2027-01-26"}
+};
+const q=(id,group,text,extra)=>Object.assign({id,group,q:text},extra||{});
+const reg=(new URLSearchParams(location.search).get("reg")||"").toUpperCase();
+function dueNote(api,label,d){const n=api.daysTo(d);if(n===null)return "";if(n<0)return `<div class="banner red"><div><b>${label} is overdue</b> – due ${api.uk(d)} (${-n} day${n===-1?"":"s"} ago). Check on the DVLA / MOT website and update the date below. Do not use the vehicle on the road until it is taxed / MOT'd.</div><div><a class="btn small" href="https://www.gov.uk/check-vehicle-tax" target="_blank" rel="noopener">Check tax and MOT on GOV.UK</a></div></div>`;
+  if(n<=30)return `<div class="banner"><div><b>${label} due in ${n} day${n===1?"":"s"}</b> – ${api.uk(d)}. Book it / tell Graham.</div></div>`;return ""}
+BC.start({
+  key:"vehicle",keyParam:"reg",ref:"HS-FORM-006",ver:"v1.1 (online)",issue:"25/10/2026",review:"06/10/2027",status:"Approved – For Issue (online version awaiting registration)",
+  title:"Company Vehicle Weekly Check",short:"Vehicle Check",tag:"weekly (Monday) and before any dangerous-goods journey",
+  dateField:"date",keep:["reg","driver","pos","tax","mot","mileage_prev"],
+  nameSuffix:S=>S.v.reg||"",
+  init(S,api){
+    if(reg&&VEHICLES[reg]&&!S.v.reg)S.v.reg=reg;
+    const V=VEHICLES[S.v.reg];if(V){if(!S.v.tax)S.v.tax=V.tax;if(!S.v.mot)S.v.mot=V.mot}
+    if(!S.v.date){const t=new Date();S.v.date=api.iso(t)}
+  },
+  onNew(S,old){S.v.mileage_prev=old.v.mileage||old.v.mileage_prev||""},
+  onField(id,S,api){if(id==="reg"){const V=VEHICLES[S.v.reg];if(V){S.v.tax=V.tax;S.v.mot=V.mot}api.render()}
+    if(id==="tax"||id==="mot"||id==="mileage")api.refreshBanner()},
+  banner(S){const api=BC.api;let h="";
+    if(!S.v.reg)h+=`<div class="banner"><div><b>Pick the vehicle</b> in section 1 first.</div></div>`;
+    h+=dueNote(api,"Road tax",S.v.tax)+dueNote(api,"MOT",S.v.mot);
+    const m=Number(S.v.mileage),pm=Number(S.v.mileage_prev);
+    if(S.v.mileage&&S.v.mileage_prev&&m<pm)h+=`<div class="banner red"><div><b>Mileage is lower than last week</b> (${pm.toLocaleString("en-GB")}). Check the reading.</div></div>`;
+    return h},
+  after(S,api){const f=document.getElementById("hint_mileage");if(f&&S.v.mileage_prev)f.textContent="Last week: "+Number(S.v.mileage_prev).toLocaleString("en-GB")+" miles"+(S.v.mileage&&Number(S.v.mileage)>=Number(S.v.mileage_prev)?" · "+(Number(S.v.mileage)-Number(S.v.mileage_prev)).toLocaleString("en-GB")+" miles this week":"")},
+  fieldNote(id,S){if(id==="mileage"&&S.v.mileage_prev)return `  (previous check: ${S.v.mileage_prev})`;if((id==="tax"||id==="mot")&&S.v[id]){const n=BC.api.daysTo(S.v[id]);if(n<0)return "  – OVERDUE";if(n<=30)return `  – due in ${n} days`}return ""},
+  pdfIntro:"Company vehicles are classed as work equipment and must be checked every week (Monday) and before any journey carrying dangerous goods, and by any new driver before driving the vehicle. A daily walk-round by the driver is not recorded unless a defect is found. Defects are also entered in HS-FORM-004. Retention: 2 years. Report any road near miss, collision or defect to the Director the same day; collisions are entered in HS-REG-001. Fatigue: do not drive if you are too tired to drive safely; say so, without detriment (HS-POL-005).",
+  pdfKey:"Key: OK = satisfactory. Defect = not satisfactory – the action taken is recorded (quarantine the vehicle if it is not safe to drive). N/A = not fitted / not carried on this vehicle.",
+  blocks:[
+    {type:"info",html:"Do this every <b>Monday</b> and before carrying gas or solvents. Check the <b>tax and MOT dates</b> are right and enter the <b>mileage</b>. Tap <b>OK</b>, <b>Defect</b> or <b>N/A</b> for each line – or tap “Mark all unanswered OK” and then change any that aren't."},
+    {type:"fields",id:"veh",title:"Vehicle and driver",fields:[
+      {id:"reg",label:"Vehicle registration",kind:"select",req:true,options:Object.keys(VEHICLES).map(k=>({v:k,l:VEHICLES[k].label}))},
+      {id:"driver",label:"Inspection carried out by (driver)",req:true},{id:"pos",label:"Position in company"},
+      {id:"date",label:"Date of inspection",kind:"date",req:true},
+      {id:"mileage",label:"Mileage (odometer)",kind:"number",req:true,inputmode:"numeric"},
+      {id:"tax",label:"Road tax due date",kind:"date",req:true,help:"Check it is still right. If the tax has been renewed, put the new date in."},
+      {id:"mot",label:"MOT due date",kind:"date",req:true,help:"Update it after each MOT."}]},
+    {type:"checks",id:"chk",title:"Weekly checks",labels:{Y:"OK",N:"Defect",NA:"N/A"},no:"Defect – report to the Director; quarantine the vehicle if not safe to drive",allYes:true,items:[
+      q("f1","Engine & fluids","Oil level OK"),q("f2","Engine & fluids","Coolant / radiator water level OK"),q("f3","Engine & fluids","Brake fluid level OK"),q("f4","Engine & fluids","Screen wash level OK; washer jets working"),q("f5","Engine & fluids","AdBlue level OK (if fitted)"),q("f6","Engine & fluids","Battery terminals good"),
+      q("t1","Tyres & wheels","Tyres – tread at least 1.6 mm across the central ¾, no cuts or bulges (spare included)"),q("t2","Tyres & wheels","Tyre pressures correct (spare included)"),q("t3","Tyres & wheels","Wheel nuts in place and secure"),q("t4","Tyres & wheels","Spare wheel, jack and wheel wrench available and working"),
+      q("l1","Lights & visibility","Lights, indicators, brake lights, number-plate light, reflectors and horn working"),q("l2","Lights & visibility","Windscreen – no cracks in the driver's line of sight"),q("l3","Lights & visibility","Wipers and mirrors working and undamaged"),
+      q("b1","Brakes & controls","Foot brake, handbrake and steering working; no warning lights"),q("b2","Brakes & controls","Seat belts and head restraints OK"),
+      q("c1","Body, cab & load","Bodywork condition good"),q("c2","Body, cab & load","Cab condition and cleanliness good; nothing loose in the cab"),q("c3","Body, cab & load","Storage / load area good; load secured"),q("c4","Body, cab & load","Roof rack sound and secure; roof load within the rated limit; ladders strapped at two points"),q("c5","Body, cab & load","Tow bar socket electrics working (if fitted)"),q("c6","Body, cab & load","Outside cleanliness good (lights, plates, mirrors clean)"),
+      q("d1","Dangerous goods (CIR-001-A)","Gas cylinders upright, valves closed, in the ventilated compartment"),q("d2","Dangerous goods (CIR-001-A)","Solvents in closed original containers in the ventilated load area – never in the cab"),q("d3","Dangerous goods (CIR-001-A)","Transit note in the cab; total under 500 points"),q("d4","Dangerous goods (CIR-001-A)","2 kg extinguisher in date, not discharged"),
+      q("s1","Safety kit","First-aid kit present, bag / box sealed"),q("s2","Safety kit","Warning triangle / breakdown hazard signage available"),q("s3","Safety kit","Hi-vis jackets available"),q("s4","Safety kit","Torch and spill kit carried"),q("s5","Safety kit","“No smoking” sign in the vehicle, fixed and visible"),q("s6","Safety kit","Radio working"),
+      q("p1","Documents","Insurance (incl. hazardous-goods declaration), MOT and breakdown cover details in the cab"),q("p2","Documents","Driver's licence valid and checked on DVLA in the last 12 months")]},
+    {type:"text",id:"mech",title:"Mechanical problems or other observations",intro:"Note anything else about the vehicle. Defects found and what was done – quarantine the vehicle if it is not safe to drive."},
+    {type:"sigs",id:"sg",title:"Signatures",sigs:[{id:"drv",label:"Driver"},{id:"dir",label:"Director review (monthly)",optional:true}]}
+  ],
+  validate(S,p){const api=BC.api;if(S.v.tax&&api.daysTo(S.v.tax)<0)p.push("Road tax shows as overdue – check it on GOV.UK and put in the new due date (section 1).");if(S.v.mot&&api.daysTo(S.v.mot)<0)p.push("MOT shows as overdue – put in the new due date after the MOT (section 1).");if(S.v.mileage&&S.v.mileage_prev&&Number(S.v.mileage)<Number(S.v.mileage_prev))p.push("Mileage is lower than last week – check the reading (section 1).")}
+});
+// copy the driver's name into the signature box name
+document.addEventListener("input",e=>{if(e.target.dataset.f==="driver"){const s=BC.api.state();if(!s.v.drv_name||s.v.drv_name===s._lastDrv){s.v.drv_name=e.target.value;s._lastDrv=e.target.value;const el=document.querySelector('[data-f="drv_name"]');if(el)el.value=e.target.value}}});
+</script></body></html>

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>B&amp;C Weekly Management Safety Inspection</title><meta name="theme-color" content="#14233f">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="engine.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="engine.js"></script></head><body>
+<script>
+const it=(id,group,q,extra)=>Object.assign({id,group,q},extra||{});
+BC.start({
+  key:"mgmt",ref:"HS-FORM-008",refNote:"proposed reference – to be confirmed",ver:"v0.1 draft",issue:"07/11/2026",review:"22/04/2027",status:"Draft – online form, awaiting registration",
+  title:"Weekly Management Safety Inspection",short:"Weekly Mgmt Safety Inspection",tag:"office & shed · every week",
+  dateField:"date",keep:["insp_name","insp_pos","ctr_name","ctr_pos"],
+  nameSuffix:S=>(S.v.loc||"").replace(/ \(.*\)/,""),
+  init(S,api){if(!S.v.date)S.v.date=api.iso(new Date())},
+  pdfIntro:"In order to provide greater assurance that safe conditions are maintained at all times, this self-inspection checklist is carried out every week at the Company office and shed. By carrying out this audit the Company is complying with the Health and Safety at Work etc. Act 1974 and the Management of Health and Safety at Work Regulations 1999, both of which require a safe place of work to be maintained. The report is signed and dated by the person carrying out the inspection and countersigned on completion by the Senior Director responsible for the workplace, then filed for the Company records.",
+  pdfKey:"Key: Yes = satisfactory. No = not satisfactory – the action taken and the date actioned are recorded against it. N/A = not applicable at this location (e.g. no fire alarm system, no stairs). A whole section marked NOT APPLICABLE does not apply to the location inspected.",
+  blocks:[
+    {type:"info",html:"Go round the <b>office and the shed</b> once a week with this form. Tap <b>Yes</b>, <b>No</b> or <b>N/A</b> for every line. A <b>No</b> needs a note of what was done and the date. Add photos of anything wrong (and of the fix)."},
+    {type:"fields",id:"det",title:"Inspection details",fields:[
+      {id:"loc",label:"Location inspected",kind:"select",req:true,options:["Office and shed (Fircroft, Springthorpe)","Office only (Fircroft)","Shed only (Fircroft)"]},
+      {id:"date",label:"Date of inspection",kind:"date",req:true},{id:"time",label:"Time",kind:"time"}]},
+    {type:"checks",id:"s1",title:"Extinguishers",na:true,actioned:true,allYes:true,items:[
+      it("1a",null,"Charged and accessible"),it("1b",null,"Checked and recorded (monthly user check; annual service in date)"),it("1c",null,"None missing, damaged or discharged")]},
+    {type:"checks",id:"s2",title:"Fire alarms / smoke detection",na:true,actioned:true,allYes:true,items:[
+      it("2a",null,"Weekly tests completed and recorded (or smoke alarms tested)"),it("2b",null,"Call points accessible"),it("2c",null,"No obstruction (e.g. covers left on detectors)")]},
+    {type:"checks",id:"s3",title:"Fire doors and fire exits",na:true,actioned:true,allYes:true,items:[
+      it("3a",null,"Operative and closed; self-closing devices in order (if applicable)"),it("3b",null,"Clear of obstructions"),it("3c",null,"Signs in place and visible – emergency exit signs, fire notice and fire plan")]},
+    {type:"checks",id:"s4",title:"Lighting and emergency lighting",na:true,actioned:true,allYes:true,items:[it("4a",null,"Operational and well maintained")]},
+    {type:"checks",id:"s5",title:"Stairs and walkways",na:true,actioned:true,allYes:true,items:[
+      it("5a",null,"Floor coverings in good condition and clean"),it("5b",null,"Stair handrails secure and fit for purpose"),it("5c",null,"Stair riser edge (nosing) rails in place and secure"),it("5d",null,"Free of obstructions and tripping hazards")]},
+    {type:"checks",id:"s6",title:"Combustible waste (paper, cardboard etc.)",na:true,actioned:true,allYes:true,items:[it("6a",null,"Removed promptly (at least daily when in use)"),it("6b",null,"Suitable containers used")]},
+    {type:"checks",id:"s7",title:"Smoking rules",na:true,actioned:true,allYes:true,items:[it("7a",null,"No-smoking signage in place"),it("7b",null,"Complied with"),it("7c",null,"No combustibles in any designated smoking area")]},
+    {type:"checks",id:"s8",title:"Storage",na:true,actioned:true,allYes:true,items:[
+      it("8a",null,"Gangways clear"),it("8b",null,"Maximum storage heights complied with"),it("8c",null,"Office clear of extraneous materials"),it("8d",null,"Storage containers labelled correctly"),it("8e",null,"Combustible materials not stored next to electrical equipment"),it("8f",null,"Hazardous materials stored in line with their Safety Data Sheets")]},
+    {type:"checks",id:"s9",title:"Flammable liquids and gas (propane, solvents)",na:true,actioned:true,allYes:true,items:[
+      it("9a",null,"Minimum quantities stored"),it("9b",null,"Stored in good order – secure and in a well-ventilated area (gas cage / flammable store)"),it("9c",null,"Empty containers removed and disposed of appropriately"),it("9d",null,"Contaminated rags etc. not allowed to build up and disposed of accordingly")]},
+    {type:"checks",id:"s10",title:"Electrical equipment",na:true,actioned:true,allYes:true,items:[
+      it("10a",null,"All appropriate equipment is PAT tested and labels affixed"),it("10b",null,"PAT test in date"),it("10c",null,"All electrical equipment visually operational with no apparent defects"),it("10d",null,"Extension cables not overloaded; no daisy-chained adaptors"),it("10e",null,"Cables, including extension cables, routed so they do not present a tripping hazard"),it("10f",null,"All electrical equipment clear of combustible materials")]},
+    {type:"checks",id:"s11",title:"Mains electricity",na:true,actioned:true,items:[it("11a",null,"Fixed wiring tested in the last 5 years and a current certificate is available")]},
+    {type:"checks",id:"s12",title:"Space heating",na:true,actioned:true,items:[it("12a",null,"Heating (incl. portable heaters) maintained by a competent person and records kept")]},
+    {type:"checks",id:"s13",title:"Security",na:true,actioned:true,allYes:true,items:[
+      it("13a",null,"Control of visitors and contractors in line with Company policy"),it("13b",null,"Evidence that visitors and contractors sign in and out"),it("13c",null,"Good control of visitors – unauthorised persons challenged"),it("13d",null,"Door, window and shed locks in working order")]},
+    {type:"checks",id:"s14",title:"Machine safety (shed equipment)",na:true,actioned:true,allYes:true,items:[
+      it("14a",null,"Guards in place and secure"),it("14b",null,"Safety interlocks operational"),it("14c",null,"Safety appliances (clamps etc.) in place and operational"),it("14d",null,"Emergency stops operational; general appearance of machine in good working order"),it("14e",null,"Areas around machines clear and free from hazards"),it("14f",null,"Lighting in the area suitable for the work"),it("14g",null,"Appropriate signage in place")]},
+    {type:"checks",id:"s15",title:"Welfare and housekeeping",na:true,actioned:true,allYes:true,items:[
+      it("15a",null,"All areas clean, tidy and clutter-free"),it("15b",null,"Welfare facilities sanitary and well maintained"),it("15c",null,"Cleaning materials and equipment stored securely and appropriately"),it("15d",null,"Office and rest-area furniture fit for purpose and maintained"),it("15e",null,"Waste bins regularly emptied and waste disposed of in line with the law")]},
+    {type:"checks",id:"s16",title:"Miscellaneous",na:true,actioned:true,allYes:true,items:[
+      it("16a",null,"PPE being worn where required"),it("16b",null,"Conduct of personnel appropriate and in line with safety rules"),it("16c",null,"First-aid facilities and kits maintained and appropriate"),it("16d",null,"First-aid cover available"),it("16e",null,"Fire wardens / persons responsible for fire safety available")]},
+    {type:"text",id:"general",title:"General comments and observations",placeholder:"Anything else seen on the walk-round"},
+    {type:"sigs",id:"sg",title:"Inspected by and countersigned",sigs:[
+      {id:"insp",label:"Inspected by"},
+      {id:"ctr",label:"Countersigned by (Senior Director)",comments:"Senior Director's comments"}]}
+  ]
+});
+</script></body></html>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>B&amp;C PPE Issue Record</title><meta name="theme-color" content="#14233f">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="engine.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="engine.js"></script></head><body>
+<script>
+/* Online version of HR-FORM-007 PPE Issue Record v1.5 (25/10/2026) – wording and item list taken from the controlled form. */
+BC.start({
+  key:"ppe",ref:"HR-FORM-007",ver:"v1.5 (online)",issue:"25/10/2026",review:"22/04/2027",status:"Approved – For Issue (online version awaiting registration)",
+  title:"PPE Issue Record",short:"PPE Issue",tag:"each time PPE is issued (extra issues after the starter pack)",
+  dateField:"idate",keep:["isb_name","isb_pos"],
+  nameSuffix:S=>S.v.name||"",
+  init(S,api){if(!S.v.idate)S.v.idate=api.iso(new Date())},
+  pdfIntro:"Record every item issued. PPE is selected from the risk assessment, RAMS and COSHH assessment for the work (reference below) and must be suitable for the actual hazard. By signing, the operative confirms receipt in good condition; that they have been given information, instruction and training on its correct use, fit, limitations, storage and maintenance; and that they will use and care for the item correctly, report loss/damage/defects immediately, and return company property on request or on leaving. Signing this record does not transfer to the operative any duty that Build & Cover Ltd holds by law. PPE is provided free of charge under the Personal Protective Equipment at Work Regulations 1992 (as amended 2022); no charge or deduction is ever made, and replacement is never conditional on return of the old item. Items are checked at issue to be suitable for the task, a correct fit and compatible when worn together.",
+  pdfEnd:"Respiratory protection – two types, not interchangeable. (1) Dust and particulate work: DeWalt PAPR with integrated hard hat and P3 filter – loose-fitting, no face-fit test, pre-use check every time (record on the RPE Issue & Daily Check form); monthly examination on HS-FORM-004. (2) Vapour and chemical work: the P3 filter gives NO protection against organic vapour. In the open air with through-ventilation, no vapour respirator is needed where the product's current SDS calls for RPE only in inadequate ventilation (recorded on the POWRA, HS-FORM-005). Enclosed or unventilated work STOPS and the Director decides; a tight-fitting vapour respirator with the cartridge named in the COSHH assessment (A-type or AX) is issued only after the face-fit hold point is met (face-fit test in date for that make, model and size; wearer clean-shaven at the seal). AX cartridges are single-use. Disposable FFP3 masks are not the Company's dust RPE. If unsure which respirator applies, ask the Director before starting. Full wording: HR-FORM-007.",
+  blocks:[
+    {type:"info",html:"Tick each item issued, then add size / make and date. Starter-pack PPE is already on the new-starter forms – use this for <b>extra or replacement</b> issues. Replacements are always free and never depend on handing the old item back."},
+    {type:"fields",id:"who",title:"Operative and work",fields:[
+      {id:"name",label:"Name",req:true},
+      {id:"route",label:"Route (HR-DOC-002)",kind:"select",req:true,options:["A – PAYE employee","B – Labour-only sub-contractor","C – Sub-contract company operative"]},
+      {id:"rams",label:"RAMS / COSHH / PPE assessment ref",placeholder:"e.g. RAMS-2001 Rev 3"},{id:"site",label:"Site / project"},
+      {id:"idate",label:"Date of this issue",kind:"date",req:true}]},
+    {type:"issue",id:"items",title:"Items issued",intro:"Harness, lanyard and any tight-fitting respirator need the unique ID and inspection / face-fit record (traceable items).",rows:[
+      {l:"Safety helmet (hard hat)"},{l:"Hi-vis vest / jacket"},{l:"Safety footwear"},{l:"Gloves (general)"},{l:"Chemical-resistant gloves (butyl / nitrile)"},{l:"Safety glasses / chemical goggles"},
+      {l:"PAPR with hard hat + P3 filter",note:"Dust / particulate only – no face fit required. Also complete the RPE Issue & Daily Check form.",trace:true},
+      {l:"Vapour respirator – tight-fitting mask + A-type / AX cartridges per COSHH",note:"Only for enclosed / unventilated work on the Director's decision – FACE-FIT TEST REQUIRED",trace:true},
+      {l:"Hearing protection"},{l:"Coveralls / waterproofs"},{l:"Harness & lanyard",note:"Inspection regime applies – record the unique ID",trace:true},{l:"PAPR spare P3 filter / battery"},
+      {other:true},{other:true},{other:true}]},
+    {type:"sigs",id:"sg",title:"Signatures",decl:"Operative: I confirm I have received the items above in good condition and have been told how to use, fit, store and look after them, and their limits. I will report loss, damage or defects straight away.",sigs:[{id:"opv",label:"Operative",noPos:true},{id:"isb",label:"Issued by (Build & Cover Ltd) – items checked as suitable, a correct fit and compatible"}]}
+  ]
+});
+</script></body></html>
