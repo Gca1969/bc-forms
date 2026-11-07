@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>B&amp;C Forms</title><meta name="theme-color" content="#14233f">
+<link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="B&amp;C Forms">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="engine.css">
 <style>
@@ -10,29 +12,58 @@ a.card{display:grid;gap:2px;text-decoration:none;color:var(--fg);background:var(
 a.card b{font:700 19px var(--display);letter-spacing:.01em}
 a.card span{font-size:13px;color:var(--muted)}
 .when{font:700 14px var(--display);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:8px 0 0}
+.pick{display:grid;gap:10px}
+.pick select{width:100%;font:600 18px var(--body,inherit);padding:14px 12px;border-radius:10px;border:2px solid var(--gold);background:var(--card);color:var(--fg)}
+.pick button{font:700 20px var(--display);padding:14px;border-radius:10px;border:0;background:var(--gold);color:#fff;letter-spacing:.03em}
+.pick button:disabled{opacity:.45}
+#install{display:none}
 </style></head><body>
 <header><div class="hwrap"><div class="co">Build &amp; Cover Ltd</div><h1>Forms</h1><div class="ref">Pick a form · fill it in on your phone · it saves as you go · send the PDF to the office</div></div></header>
 <main>
-  <section class="list">
-    <div class="when">Every week</div>
-    <a class="card" href="../timesheet.html"><b>Weekly Site Hours Record</b><span>HR-FORM-013 · every operative · send with your invoice</span></a>
-    <a class="card" href="site-inspection.html"><b>Site Inspection Sheet</b><span>Every job, every week (minimum) · open it from the link in the job folder so the job number fills in</span></a>
-    <a class="card" href="vehicle-check.html?reg=YS72HGD"><b>Vehicle Check – YS72HGD</b><span>HS-FORM-006 · Monday + before carrying gas / solvents · tax, MOT, mileage</span></a>
-    <a class="card" href="vehicle-check.html?reg=WV20MYA"><b>Vehicle Check – WV20MYA</b><span>HS-FORM-006 · Monday + before carrying gas / solvents · tax, MOT, mileage</span></a>
-    <a class="card" href="mgmt-inspection.html"><b>Weekly Management Safety Inspection</b><span>Office and shed · Graham · countersigned</span></a>
-    <div class="when">Every day of use</div>
-    <a class="card" href="equipment-preuse.html"><b>Equipment Pre-Use Inspection Record</b><span>Before using any tool · pick it from the PAT list · one sheet per person per week</span></a>
-    <a class="card" href="harness-lanyard.html"><b>Safety Harness &amp; Lanyard Pre-Use Inspection</b><span>Every day before use · pick the item by its ID number · one sheet per item per week</span></a>
-    <a class="card" href="rpe-papr.html"><b>RPE Issue &amp; Daily Check – DeWalt PAPR</b><span>On issue, every day it's worn, and on return</span></a>
-    <div class="when">When it happens</div>
-    <a class="card" href="ppe-issue.html"><b>PPE Issue Record</b><span>HR-FORM-007 · extra or replacement PPE (starter PPE is on the new-starter forms)</span></a>
-    <a class="card" href="harness-register.html"><b>Harness &amp; Lanyard Registration</b><span>Once, before any NEW harness or lanyard is used · label + conformity certificate</span></a>
-    <a class="card" href="ladder-defect.html"><b>Ladder Defect Notice</b><span>Only when a ladder or stepladder fails its pre-use check</span></a>
+  <section class="pick">
+    <h2>Which form?</h2>
+    <select id="menu" aria-label="Choose a form"></select>
+    <button id="go" disabled>Open form</button>
+    <button id="install">Add B&amp;C Forms to my home screen</button>
   </section>
+  <section class="list" id="cards"></section>
   <section>
     <h2>Tips</h2>
-    <p class="intro"><b>Save this page to your home screen:</b> in Chrome tap ⋮ then “Add to Home screen”; on iPhone tap Share then “Add to Home Screen”.</p>
+    <p class="intro"><b>Put it on your home screen:</b> on Android open this page in Chrome, tap ⋮ (top right) then <b>“Add to Home screen”</b> or <b>“Install app”</b>. On iPhone open it in Safari, tap Share then <b>“Add to Home Screen”</b>. You then get a <b>B&amp;C Forms</b> icon like any other app.</p>
     <p class="intro"><b>No signal?</b> Keep filling in – it all saves on the phone. You only need signal to make and send the PDF.</p>
     <p class="intro">Finished forms are emailed to <b>graham@buildandcover.co.uk</b>. Problems: ring Graham on 07796 144399.</p>
   </section>
-</main></body></html>
+</main>
+<script>
+const FORMS=[
+ ["Every week",[
+  ["../timesheet.html","Weekly Site Hours Record","HR-FORM-013 · every operative · send with your invoice"],
+  ["site-inspection.html","Site Inspection Sheet","Every job, every week (minimum) · open it from the link in the job folder so the job number fills in"],
+  ["vehicle-check.html?reg=YS72HGD","Vehicle Check – YS72HGD Ford Ranger","HS-FORM-006 · Monday + before carrying gas / solvents · tax, MOT, mileage"],
+  ["vehicle-check.html?reg=WV20MYA","Vehicle Check – WV20MYA Transit Custom","HS-FORM-006 · Monday + before carrying gas / solvents · tax, MOT, mileage"],
+  ["mgmt-inspection.html","Weekly Management Safety Inspection","Office and shed · Graham · countersigned"]]],
+ ["Every day of use",[
+  ["equipment-preuse.html","Equipment Pre-Use Inspection Record","Before using any tool · pick it from the PAT list · one sheet per person per week"],
+  ["harness-lanyard.html","Harness, Lanyard, Block & Rope Pre-Use","Every day before use · pick the item by its ID number · one sheet per item per week"],
+  ["rpe-papr.html","RPE Issue & Daily Check – DeWalt PAPR","On issue, every day it's worn, and on return"]]],
+ ["When it happens",[
+  ["ppe-issue.html","PPE Issue Record","HR-FORM-007 · extra or replacement PPE (starter PPE is on the new-starter forms)"],
+  ["harness-register.html","Harness & Lanyard Registration","Once, before any NEW harness, lanyard, block or rope is used · label + conformity certificate"],
+  ["ladder-defect.html","Ladder Defect Notice","Only when a ladder or stepladder fails its pre-use check"]]]
+];
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+const menu=document.getElementById("menu"),go=document.getElementById("go"),cards=document.getElementById("cards");
+let m='<option value="">— tap to choose a form —</option>',c="";
+for(const [g,list] of FORMS){m+=`<optgroup label="${esc(g)}">`;c+=`<div class="when">${esc(g)}</div>`;
+  for(const [u,t,s] of list){m+=`<option value="${u}">${esc(t)}</option>`;c+=`<a class="card" href="${u}"><b>${esc(t)}</b><span>${esc(s)}</span></a>`}
+  m+="</optgroup>"}
+menu.innerHTML=m;cards.innerHTML=c;
+menu.onchange=()=>{go.disabled=!menu.value;if(menu.value)location.href=menu.value};
+go.onclick=()=>{if(menu.value)location.href=menu.value};
+window.addEventListener("pageshow",()=>{menu.value="";go.disabled=true});
+let ev=null;const ib=document.getElementById("install");
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();ev=e;ib.style.display="block"});
+ib.onclick=async()=>{if(!ev)return;ev.prompt();await ev.userChoice;ev=null;ib.style.display="none"};
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body></html>
