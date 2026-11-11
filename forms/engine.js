@@ -98,7 +98,9 @@ function equipHtml(b,n){
   const E=S.eq,d=E.day;
   const ws=parseIso(val(b.weekField))||mondayOf(new Date());
   const dayBtns=DAYS.map((x,i)=>{const done=E.items.length&&E.items.every(it=>b.checks.every(c=>(it.r[c.id]||{})[i]));return `<button type="button" data-day="${i}" class="${i===d?"on":""}${done?" done":""}">${x}<br><span style="font:400 11px var(--body)">${pad(addDays(ws,i).getDate())}/${pad(addDays(ws,i).getMonth()+1)}</span></button>`}).join("");
-  const opts=b.catalogue.map(c=>`<option value="${esc(c.id)}">${esc(c.id+" – "+c.desc)}</option>`).join("");
+  const opt=c=>`<option value="${esc(c.id)}">${esc(c.id+" – "+c.desc)}</option>`;
+  const grps=[...new Set(b.catalogue.map(c=>c.group||""))];
+  const opts=grps.length>1?grps.map(g=>`<optgroup label="${esc(g||"Other")}">${b.catalogue.filter(c=>(c.group||"")===g).map(opt).join("")}</optgroup>`).join(""):b.catalogue.map(opt).join("");
   const items=E.items.map((it,k)=>`<div class="equip"><div class="eh"><span>${esc(it.desc)}<br><span class="note">ID: ${esc(it.eid||"–")}</span></span>${b.fixed?"":`<button type="button" class="btn small" data-eqdel="${k}">Remove</button>`}</div>
      <div class="tools"><button type="button" class="btn small gold" data-eqall="${k}">All OK for ${DAYS[d]}</button></div>
      ${b.checks.map(c=>{const r=(it.r[c.id]||{})[d]||"";return `<div class="item${r==="X"?" no":""}"><div class="q">${esc(c.q)}</div><div class="seg"><button type="button" class="y" data-eq="${k}|${c.id}" data-v="OK" aria-pressed="${r==="OK"}">✓ OK</button><button type="button" class="n" data-eq="${k}|${c.id}" data-v="X" aria-pressed="${r==="X"}">✗ Fault</button><button type="button" class="x" data-eq="${k}|${c.id}" data-v="NA" aria-pressed="${r==="NA"}">N/A</button></div>${r==="X"?`<div class="act">Take it out of use and tell the manager/supervisor straight away. Describe the fault in the comments below.</div>`:""}</div>`}).join("")}

@@ -7,9 +7,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="engine.js"></script></head><body>
 <script>
-/* Equipment register – tools section of the Plug Safe Lincs PAT report, 26/10/2026 and 01/11/2026
-   (asset IDs on the PAT labels). Office items are not listed. Add new kit here when it is PAT tested. */
-const CAT=[
+/* 1) Battery tools – CURRENT TOOL LIST photos 11/11/2026 (H&S › PAT TESTING & BATTERY TOOLS › CURRENT TOOL LIST).
+      ID = the number written on the tool in marker (01–22). Model shown only where it can be read on the rating plate.
+   2) PAT-tested equipment – tools section of the Plug Safe Lincs PAT report, 26/10/2026 and 01/11/2026
+      (asset IDs on the PAT labels). Office items are not listed. Add new kit here when it is PAT tested. */
+const BAT=[
+ ["01","DeWalt SDS drill"],["02","DeWalt angle grinder"],["03","DeWalt 54 V pressure washer"],["04","DeWalt circular saw"],["05","DeWalt reciprocating saw"],
+ ["06","DeWalt jigsaw"],["07","DeWalt sander DCW211"],["08","DeWalt riveter"],["09","DeWalt multi-tool"],["10","DeWalt combi drill"],
+ ["11","DeWalt heavy-duty angle grinder"],["12","DeWalt impact wrench"],["13","DeWalt jigsaw DCS331"],["14","DeWalt blower"],["15","Makita tek screwdriver DFS251"],
+ ["16","Makita nibbler"],["17","Makita metal shear"],["18","Makita tek screwdriver DFS251"],["19","DeWalt combi drill"],["20","DeWalt site radio (small) – battery only, not used on mains"],
+ ["21","DeWalt site radio (large) – battery only, not used on mains"],["22","DeWalt PAPR respirator – daily check on the RPE form"]
+].map(([n,desc])=>({id:"BT"+n,desc,group:"Battery tools (number marked on the tool)"}));
+const PAT=[
  ["PSL61667","Vacuum cleaner (dust extractor)"],["PSL61668","110 V transformer"],["PSL61669","110 V transformer"],["PSL61670","110 V transformer"],["PSL61671","110 V transformer"],
  ["PSL61672","Power tool battery charger"],["PSL61673","Power tool battery charger"],["PSL61674","Power tool battery charger"],["PSL61675","Power tool battery charger"],["PSL61676","Power tool battery charger"],
  ["PSL61677","Power tool battery charger"],["PSL61678","Power tool battery charger"],["PSL61679","Power tool battery charger"],["PSL61680","Power tool battery charger"],["PSL61700","Power tool battery charger"],
@@ -17,10 +26,11 @@ const CAT=[
  ["PSL61682","Extension lead"],["PSL61686","Extension lead"],["PSL61687","Extension lead"],["PSL61688","Extension lead"],["PSL61689","Extension lead"],["PSL61690","Extension lead"],["PSL61691","Extension lead"],["PSL61692","Extension lead"],["PSL61693","Extension lead"],["PSL61695","Extension lead"],["PSL61696","Extension lead"],
  ["PSL61703","Extension lead (new plug, 01/11/26)"],["PSL61704","Extension lead 110 V (new socket, 01/11/26)"],["PSL61705","Extension lead 110 V (new socket, 01/11/26)"],["PSL61706","Extension lead 110 V (new socket, 01/11/26)"],["PSL61707","Extension lead"],["PSL61708","Extension lead 32 A (new socket, 01/11/26)"],["PSL61709","Extension lead"],
  ["PSL61697","Adaptor"],["PSL61698","Adaptor"],["PSL61699","Adaptor"],["PSL61701","Chop saw"],["PSL61702","Mixer"]
-].map(([id,desc])=>({id,desc}));
+].map(([id,desc])=>({id,desc,group:"Mains / 110 V equipment (PAT label ID)"}));
+const CAT=BAT.concat(PAT);
 const C=(id,q)=>({id,q});
 BC.start({
-  key:"equip",ref:"HS-FORM-010",refNote:"proposed reference – to be confirmed",ver:"v0.1 draft",issue:"07/11/2026",review:"22/04/2027",status:"Draft – online form, awaiting registration",
+  key:"equip",ref:"HS-FORM-010",refNote:"proposed reference – to be confirmed",ver:"v0.2 draft",issue:"11/11/2026",review:"22/04/2027",status:"Draft – online form, awaiting registration",
   title:"Equipment Pre-Use Inspection Record",short:"Equipment Pre-Use",tag:"daily, before use · one sheet per operative per week",
   dateField:"wc",keep:["op","job"],
   nameSuffix:S=>"wc "+(S.v.op||""),
@@ -32,7 +42,7 @@ BC.start({
     {type:"info",html:"Each day <b>before you use</b> a tool: pick the day, then tick each check for every item you're using. <b>✗ Fault</b> = stop, take it out of use and tell Graham. Items stay on the sheet all week, so you only add them once. Send it at the end of the week."},
     {type:"fields",id:"det",title:"Operator and week",fields:[{id:"op",label:"Operator name",req:true},{id:"wc",label:"Week commencing (Monday)",kind:"date",req:true},{id:"job",label:"Job number / site"}]},
     {type:"equip",id:"eqp",title:"Equipment and daily checks",weekField:"wc",allowOther:true,catalogue:CAT,
-      intro:"Pick from the PAT register (ID on the PAT label). For kit not on the list – e.g. hot-air welder, gas torch, battery drill – choose “other” and type the description and its ID.",
+      intro:"Pick the tool from the list. Battery tools are listed by the number marked on the tool (BT01–BT22); mains / 110 V kit by the ID on its PAT label. For anything not on the list – e.g. hot-air welder or gas torch – type the description and its ID under “other”.",
       checks:[C("c1","Equipment casing / body"),C("c2","Equipment stable"),C("c3","Guards – fitted and secure"),C("c4","PAT label in date (if applicable)"),C("c5","Wiring / cables"),C("c6","Electrical plug"),C("c7","Battery casing (if applicable)"),C("c8","Battery charger – casing (if applicable)"),C("c9","Battery charger – cables (if applicable)"),C("c10","On/off switch operational"),C("c11","Emergency stops operational"),C("c12","Controls clearly marked"),C("c13","Warning devices operational, e.g. safety interlocks"),C("c14","Test certificates in date (e.g. lifting accessories)"),C("c15","Still as per the manufacturer's design (not modified)"),C("c16","Safety appliances in good condition, e.g. clamps"),C("c17","Working area hazard-free – unobstructed, no trip / slip hazards"),C("c18","Lighting in the working area suitable"),C("c19","Appropriate signage in place")]},
     {type:"sigs",id:"sg",title:"Sign-off",sigs:[{id:"opr",label:"Operator"},{id:"mgr",label:"Manager / Supervisor (end of week)",optional:true,comments:"Manager / Supervisor's comments – actions taken, by whom and when"}]}
   ]
