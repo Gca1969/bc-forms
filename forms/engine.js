@@ -98,17 +98,17 @@ function equipHtml(b,n){
   const E=S.eq,d=E.day;
   const ws=parseIso(val(b.weekField))||mondayOf(new Date());
   const dayBtns=DAYS.map((x,i)=>{const done=E.items.length&&E.items.every(it=>b.checks.every(c=>(it.r[c.id]||{})[i]));return `<button type="button" data-day="${i}" class="${i===d?"on":""}${done?" done":""}">${x}<br><span style="font:400 11px var(--body)">${pad(addDays(ws,i).getDate())}/${pad(addDays(ws,i).getMonth()+1)}</span></button>`}).join("");
-  const opt=c=>`<option value="${esc(c.id)}">${esc(c.id+" – "+c.desc)}</option>`;
+  const opt=c=>`<option value="${esc(c.id)}"${c.img?` data-img="${esc(c.img)}"`:""}>${esc(c.id+" – "+c.desc)}</option>`;
   const grps=[...new Set(b.catalogue.map(c=>c.group||""))];
   const opts=grps.length>1?grps.map(g=>`<optgroup label="${esc(g||"Other")}">${b.catalogue.filter(c=>(c.group||"")===g).map(opt).join("")}</optgroup>`).join(""):b.catalogue.map(opt).join("");
-  const items=E.items.map((it,k)=>`<div class="equip"><div class="eh"><span>${esc(it.desc)}<br><span class="note">ID: ${esc(it.eid||"–")}</span></span>${b.fixed?"":`<button type="button" class="btn small" data-eqdel="${k}">Remove</button>`}</div>
+  const items=E.items.map((it,k)=>`<div class="equip"><div class="eh"><span>${it.img?`<img src="${esc(it.img)}" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:6px;float:left;margin:0 10px 4px 0">`:""}${esc(it.desc)}<br><span class="note">ID: ${esc(it.eid||"–")}</span>${it.link?`<br><a class="btn small gold" target="_blank" rel="noopener" href="${esc(it.link+(it.link.includes("?")?"&":"?")+"name="+encodeURIComponent(val("op")||"")+"&wc="+encodeURIComponent(val(b.weekField)||"")+"&serial="+encodeURIComponent(it.eid||""))}">${esc(it.linkLabel||"Open linked form")}</a>`:""}</span>${b.fixed?"":`<button type="button" class="btn small" data-eqdel="${k}">Remove</button>`}</div>
      <div class="tools"><button type="button" class="btn small gold" data-eqall="${k}">All OK for ${DAYS[d]}</button></div>
      ${b.checks.map(c=>{const r=(it.r[c.id]||{})[d]||"";return `<div class="item${r==="X"?" no":""}"><div class="q">${esc(c.q)}</div><div class="seg"><button type="button" class="y" data-eq="${k}|${c.id}" data-v="OK" aria-pressed="${r==="OK"}">✓ OK</button><button type="button" class="n" data-eq="${k}|${c.id}" data-v="X" aria-pressed="${r==="X"}">✗ Fault</button><button type="button" class="x" data-eq="${k}|${c.id}" data-v="NA" aria-pressed="${r==="NA"}">N/A</button></div>${r==="X"?`<div class="act">Take it out of use and tell the manager/supervisor straight away. Describe the fault in the comments below.</div>`:""}</div>`}).join("")}
      <label class="f">Initials for ${DAYS[d]}<input type="text" data-eqi="${k}" value="${esc((it.ini||{})[d]||"")}" maxlength="6"></label>
      <label class="f">Comments / faults for this item<textarea data-eqc="${k}">${esc(it.c||"")}</textarea></label>${photoTools("e_"+it.uid,"Photo of fault / item")}</div>`).join("");
   return `<section>${`<h2><span class="n">${n}</span> ${esc(b.title)}</h2>`}${b.intro?`<p class="note">${esc(b.intro)}</p>`:""}
     <div class="days">${dayBtns}</div>
-    ${b.fixed?"":`<div class="item"><label class="f">Add equipment from the register<select id="eqpick"><option value="">– pick an item –</option>${opts}</select></label>
+    ${b.fixed?"":`<div class="item"><label class="f">Add equipment from the register<select id="eqpick" onchange="const o=this.selectedOptions[0],i=document.getElementById('eqimg');if(o&&o.dataset.img){i.src=o.dataset.img;i.hidden=false}else{i.hidden=true}"><option value="">– pick an item –</option>${opts}</select></label><img id="eqimg" alt="Photo of the selected tool" hidden style="display:block;max-width:180px;max-height:180px;border-radius:8px;margin:6px 0">
       ${b.allowOther?`<div class="row"><label class="f">…or other equipment (description)<input type="text" id="eqOd"></label><label class="f">ID number<input type="text" id="eqOi"></label></div>`:""}
       <button type="button" class="btn small primary" id="eqAdd">Add to this week’s sheet</button></div>`}
     ${items||`<p class="note">No equipment added yet.</p>`}</section>`;
@@ -185,9 +185,9 @@ document.addEventListener("click",e=>{
   if(d.eqall!=null){const b=F.blocks.find(x=>x.type==="equip");const it=S.eq.items[+d.eqall];b.checks.forEach(c=>{const r=(it.r[c.id]=it.r[c.id]||{});if(!r[S.eq.day])r[S.eq.day]="OK"});save();render();return}
   if(d.eqdel!=null){if(confirm("Remove this item from the sheet?")){S.eq.items.splice(+d.eqdel,1);save();render()}return}
   if(t.id==="eqAdd"){const b=F.blocks.find(x=>x.type==="equip");const pick=$("eqpick").value;let desc,eid;
-    if(pick){const c=b.catalogue.find(x=>x.id===pick);desc=c.desc;eid=c.id}else if($("eqOd")&&$("eqOd").value.trim()){desc=$("eqOd").value.trim();eid=($("eqOi").value||"").trim()}
+    let img="",link="",linkLabel="";if(pick){const c=b.catalogue.find(x=>x.id===pick);desc=c.desc;eid=c.id;img=c.img||"";link=c.link||"";linkLabel=c.linkLabel||""}else if($("eqOd")&&$("eqOd").value.trim()){desc=$("eqOd").value.trim();eid=($("eqOi").value||"").trim()}
     if(!desc){alert("Pick an item from the list, or type the description of other equipment.");return}
-    S.eq.items.push({uid:uid(),desc,eid,r:{},ini:{},c:""});save();render();return}
+    S.eq.items.push({uid:uid(),desc,eid,img,link,linkLabel,r:{},ini:{},c:""});save();render();return}
   if(t.id==="sendFinal"){send(false);return}
   if(t.id==="sendPart"){send(true);return}
 });

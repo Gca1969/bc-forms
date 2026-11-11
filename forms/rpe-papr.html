@@ -11,11 +11,11 @@
    low airflow indicator check, filter replacement) and DeWalt support guidance (helmet in-use life 5 years; annual service). */
 const C=(id,q)=>({id,q});
 BC.start({
-  key:"papr",keyParam:"unit",ref:"HS-FORM-012",refNote:"proposed reference – to be confirmed",ver:"v0.1 draft",issue:"07/11/2026",review:"22/04/2027",status:"Draft – online form, awaiting registration",
+  key:"papr",keyParam:"unit",ref:"HS-FORM-012",refNote:"proposed reference – to be confirmed",ver:"v0.2 draft",issue:"11/11/2026",review:"22/04/2027",status:"Draft – online form, awaiting registration",
   title:"RPE Issue & Daily Check – DeWalt PAPR",short:"RPE PAPR Issue",tag:"on issue, every day of use, and on return",
   dateField:"wc",keep:["name","serial","issued","batt"],
   nameSuffix:S=>"wc "+(S.v.name||""),
-  init(S,api){if(!S.v.wc)S.v.wc=api.iso(api.mondayOf(new Date()));if(!S.v.issued)S.v.issued=api.iso(new Date());if(!S.eq.items.length)S.eq.items.push({uid:"papr",desc:"DeWalt PAPR with hard hat, P3 HEPA filter (DXPGH2SB21)",eid:S.v.serial||"",r:{},ini:{},c:""})},
+  init(S,api){const P=api.params;if(P.get("name")&&!S.v.name)S.v.name=P.get("name");if(P.get("wc"))S.v.wc=P.get("wc");if(P.get("serial")&&!S.v.serial)S.v.serial=P.get("serial");if(!S.v.wc)S.v.wc=api.iso(api.mondayOf(new Date()));if(!S.v.issued)S.v.issued=api.iso(new Date());if(!S.eq.items.length)S.eq.items.push({uid:"papr",desc:"DeWalt PAPR with hard hat, P3 HEPA filter (DXPGH2SB21)",eid:S.v.serial||"",r:{},ini:{},c:""})},
   onField(id,S){if(id==="serial"&&S.eq.items[0])S.eq.items[0].eid=S.v.serial},
   onNew(S,old){S.v.wc=BC.api.iso(BC.api.mondayOf(new Date()));S.eq.items=[{uid:"papr"+Date.now(),desc:"DeWalt PAPR with hard hat, P3 HEPA filter (DXPGH2SB21)",eid:old.v.serial||"",r:{},ini:{},c:""}]},
   pdfIntro:"Upon issue of any RPE it is the wearer's responsibility to make sure it is fit for purpose at all times. All RPE is checked on a daily basis before use and any item damaged, lost or stolen is reported to the management immediately. DO NOT undertake any works without the correct RPE for the job. The DeWalt PAPR is a loose-fitting powered respirator (EN 12941 TH3P) with a P3 HEPA filter: it protects against dust and particulates only and gives NO protection against organic vapour (HR-FORM-007; HS-POL-001). No face-fit test is needed. Monthly examination is recorded on HS-FORM-004; the unit is serviced annually; the hard hat is replaced 5 years after first issue or after any impact.",
