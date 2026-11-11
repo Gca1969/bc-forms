@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>B&amp;C Telehandler Pre-Use Check</title><meta name="theme-color" content="#14233f">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="engine.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="engine.js"></script></head><body>
+<script>
+/* Online version of the paper sheet BC-PLT-001 Rev 0 (Oct 2026) "Telehandler Daily Pre-Use Check Sheet".
+   The 23 checks, the key and the LOLER-certificate defects are copied from that sheet.
+   Machine details default to the Anglian Plant JCB 540-180 on hire for job 2001 – change them for any other machine. */
+const C=(id,q)=>({id,q});
+const DEF={machine:"JCB 540-180 (18 m)",serial:"JCB5RAMGVM3011135",fleet:"AF1703 / MF21CWX",hirer:"Anglian Plant Ltd",attach:"Carriage + fork positioner",loler:"SPS. 040220262IA",lolerexp:"2027-02-03",site:"Nestlé Purina Wisbech – EB roof (job 2001)"};
+const desc=S=>S.v.machine||"Telehandler";
+const item=(S,uid)=>({uid,desc:desc(S),eid:S.v.fleet||"",r:{},ini:{},c:""});
+BC.start({
+  key:"telehandler",ref:"BC-PLT-001",refNote:"online version of the paper sheet, Rev 0 – to be confirmed",ver:"v0.1 draft",issue:"11/11/2026",review:"22/04/2027",status:"Draft – online form, awaiting registration",
+  title:"Telehandler Daily Pre-Use Check Sheet",short:"Telehandler Pre-Use",tag:"every day before first use · one sheet per machine per week",
+  dateField:"wc",keep:["machine","serial","fleet","hirer","attach","loler","lolerexp","site","op","card","cardexp","lolerfix"],
+  nameSuffix:S=>(S.v.fleet||"").split("/")[0].trim()+" wc",
+  init(S,api){for(const k in DEF)if(S.v[k]==null)S.v[k]=DEF[k];if(!S.v.wc)S.v.wc=api.iso(api.mondayOf(new Date()));if(!S.eq.items.length)S.eq.items.push(item(S,"tele"))},
+  onField(id,S){const it=S.eq.items[0];if(it){it.desc=desc(S);it.eid=S.v.fleet||""}},
+  onNew(S,old){S.v.wc=BC.api.iso(BC.api.mondayOf(new Date()));S.eq.items=[item(S,"tele"+Date.now())]},
+  banner(S){return `<div class="banner"><div><b>Safety-critical defect (brakes, steering, boom, forks, LLMI, stabilisers, alarm): DO NOT USE.</b> Isolate, tag out, tell the supervisor and the hirer.</div></div>`},
+  pdfIntro:"PUWER 1998 Reg 6 and LOLER 1998 Reg 9(3) – inspection between thorough examinations. Forks / fork positioner use only. Every check is marked each day before first use. Every fault is reported to the supervisor and to the hirer the same day. Safety-critical defect (brakes, steering, boom, forks, LLMI, stabilisers, alarm): DO NOT USE – isolate, tag out, tell the supervisor and the hirer. This record is kept on site with the LOLER certificate. Defects already noted on the LOLER certificate (04/02/2026): 1. RH rear light and brake light bulb not working. 2. Reverse light bulb not working. 3. Wear on pins for jack leg feet – monitor but serviceable.",
+  pdfKey:"Key: OK = checked and OK. FAULT = defect found – recorded in the defect report. n/a = not applicable / not fitted. Blank = machine not used that day.",
+  blocks:[
+    {type:"info",html:"Do every check <b>each day before first use</b>. Section A with the <b>engine off, boom lowered, park brake on</b>; Section B with the <b>engine running, area clear, no load</b>. Any ✗ Fault: write it in the defect report and tell the supervisor and the hirer <b>the same day</b>."},
+    {type:"fields",id:"mc",title:"Machine",intro:"Filled in for the machine on hire. Change anything that is different.",fields:[
+      {id:"machine",label:"Machine",req:true},{id:"serial",label:"Serial no."},{id:"fleet",label:"Fleet / reg",req:true},{id:"hirer",label:"Hired from"},
+      {id:"attach",label:"Attachment"},{id:"loler",label:"LOLER certificate no.",req:true},{id:"lolerexp",label:"LOLER expires",kind:"date",req:true},{id:"site",label:"Site / job",req:true}]},
+    {type:"fields",id:"opr",title:"Operator and week",fields:[
+      {id:"op",label:"Operator",req:true},{id:"card",label:"CPCS / NPORS card no.",req:true},{id:"cardexp",label:"Card expiry",kind:"date",req:true},{id:"wc",label:"Week commencing (Monday)",kind:"date",req:true}]},
+    {type:"fields",id:"lol",title:"Defects already noted on the LOLER certificate (04/02/2026)",
+      intro:"1. RH rear light and brake light bulb not working.  2. Reverse light bulb not working.  3. Wear on pins for jack leg feet – monitor but serviceable.  Confirm items 1 and 2 have been repaired before first use.",fields:[
+      {id:"lolerfix",label:"Items 1 & 2 repaired – confirmed by / date",help:"Leave blank if this is a different machine."}]},
+    {type:"equip",id:"chk",title:"Daily pre-use checks",weekField:"wc",fixed:true,catalogue:[],
+      intro:"Pick the day, then tick each check. “All OK” fills the blanks for that day – then change any that aren't right. Put your initials at the bottom for each day.",
+      checks:[
+        C("a1","A1. Tyres & wheels – inflation, cuts, bulges, wheel nuts secure"),C("a2","A2. Forks & carriage – cracks, bent tines, heel wear, locking pins in"),C("a3","A3. Fork positioner – hoses & fittings, no leaks, operates evenly"),
+        C("a4","A4. Boom & wear pads – damage, cracks, wear pads, pins & retainers"),C("a5","A5. Hydraulic hoses & rams – leaks, chafing, damage"),C("a6","A6. Stabilisers / jack legs – pins & feet (WEAR NOTED ON LOLER CERT – monitor)"),
+        C("a7","A7. Fluid levels – engine oil, coolant, hydraulic, fuel, AdBlue"),C("a8","A8. Lights & beacon – incl. RH rear / brake & reverse (DEFECTS ON LOLER CERT)"),C("a9","A9. Mirrors, glass & wipers – clean, undamaged, correctly adjusted"),
+        C("a10","A10. Load charts & decals – in cab, legible, match forks / carriage fitted"),C("a11","A11. Seat & seat belt – secure, belt latches and retracts"),C("a12","A12. Steps, handholds & cab – secure, clean, no loose items in cab"),
+        C("a13","A13. Fire extinguisher (if fitted) – present, in date, gauge in green"),
+        C("b14","B14. Gauges & warning lights – all lamps clear after start-up"),C("b15","B15. Horn – works"),C("b16","B16. Reversing alarm / camera – audible / clear picture"),
+        C("b17","B17. Steering & steer modes – responds correctly, mode selector works"),C("b18","B18. Service & park brake – holds machine; park brake alarm works"),C("b19","B19. Boom functions – lift, lower, extend, retract, tilt – smooth, no creep"),
+        C("b20","B20. Stabilisers & frame levelling – deploy, retract, level correctly"),C("b21","B21. Load management (LLMI / LMI) – self-test passed; alarm & cut-out work"),C("b22","B22. Travel & neutral lock – forward, reverse, neutral, FNR lock"),
+        C("b23","B23. Emergency stop / isolator – stops machine, resets correctly")]},
+    {type:"fields",id:"hrs",title:"Hour meter reading",intro:"Enter the reading for each day the machine is used.",fields:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map((d,i)=>({id:"hm"+i,label:d,inputmode:"decimal"}))},
+    {type:"text",id:"defects",title:"Defect report and action record",intro:"For every ✗ Fault: date, item no., what is wrong, safe to use (Y/N), who it was reported to and when, action taken / repaired by, and sign-off date.",placeholder:"e.g. 12/11 – A8 – reverse light out – safe Y – reported to Anglian Plant 07:40 – bulb replaced by fitter 12/11"},
+    {type:"sigs",id:"sg",title:"Sign-off",sigs:[{id:"opr",label:"Operator"},{id:"sup",label:"Weekly supervisor review – I have reviewed this week's checks and all defects have been actioned",optional:true,comments:"Supervisor's comments"}]}
+  ]
+});
+</script></body></html>
