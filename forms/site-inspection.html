@@ -10,7 +10,7 @@
 const q=(id,text,no,extra)=>Object.assign({id,q:text,no},extra||{});
 const C="Cease task",R="Take remedial action",A="Take action",D="Do not use",I="Inform";
 BC.start({
-  key:"site",keyParam:"job",ref:"HS-FORM-009",refNote:"proposed reference – to be confirmed",ver:"v0.1 draft",issue:"07/11/2026",review:"22/04/2027",status:"Draft – online form, awaiting registration",
+  key:"site",keyParam:"job",ref:"HS-FORM-009",ver:"v0.1 draft",issue:"07/11/2026",review:"22/04/2027",status:"Draft – online form, registered on MGT-REG-001; awaiting Watson & Watson review",
   title:"Site Inspection Sheet",short:"Site Inspection",tag:"every job · every week (as a minimum)",
   dateField:"date",keep:["job","site","rp_name","rp_pos"],
   nameSuffix:S=>"Job "+(S.v.job||"").trim(),

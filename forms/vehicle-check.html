@@ -20,7 +20,7 @@ const reg=(new URLSearchParams(location.search).get("reg")||"").toUpperCase();
 function dueNote(api,label,d){const n=api.daysTo(d);if(n===null)return "";if(n<0)return `<div class="banner red"><div><b>${label} is overdue</b> – due ${api.uk(d)} (${-n} day${n===-1?"":"s"} ago). Check on the DVLA / MOT website and update the date below. Do not use the vehicle on the road until it is taxed / MOT'd.</div><div><a class="btn small" href="https://www.gov.uk/check-vehicle-tax" target="_blank" rel="noopener">Check tax and MOT on GOV.UK</a></div></div>`;
   if(n<=30)return `<div class="banner"><div><b>${label} due in ${n} day${n===1?"":"s"}</b> – ${api.uk(d)}. Book it / tell Graham.</div></div>`;return ""}
 BC.start({
-  key:"vehicle",keyParam:"reg",ref:"HS-FORM-006",ver:"v1.1 (online)",issue:"25/10/2026",review:"06/10/2027",status:"Approved – For Issue (online version awaiting registration)",
+  key:"vehicle",keyParam:"reg",ref:"HS-FORM-006",ver:"v1.1 (online)",issue:"25/10/2026",review:"06/10/2027",status:"Approved – For Issue (online version registered on MGT-REG-001)",
   title:"Company Vehicle Weekly Check",short:"Vehicle Check",tag:"weekly (Monday) and before any dangerous-goods journey",
   dateField:"date",keep:["reg","driver","pos","tax","mot","mileage_prev"],
   nameSuffix:S=>S.v.reg||"",
