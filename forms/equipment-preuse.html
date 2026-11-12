@@ -8,7 +8,7 @@
 <script src="engine.js"></script></head><body>
 <script>
 /* 1) Battery tools – CURRENT TOOL LIST photos 11/11/2026 (H&S › PAT TESTING & BATTERY TOOLS › CURRENT TOOL LIST).
-      ID = the number written on the tool in marker (01–23). Photos: tools/BTnn.jpg (thumbnails of the CURRENT TOOL LIST photos). BT23 cut-off saw mislaid 11/11/2026 – add photo when found. Model shown only where it can be read on the rating plate.
+      ID = the number written on the tool in marker (01–24). Photos: tools/BTnn.jpg (thumbnails of the CURRENT TOOL LIST photos). BT23 cut-off saw mislaid 11/11/2026 – add photo when found. Model shown only where it can be read on the rating plate.
    2) PAT-tested equipment – tools section of the Plug Safe Lincs PAT report, 26/10/2026 and 01/11/2026
       (asset IDs on the PAT labels). Office items are not listed. Add new kit here when it is PAT tested. */
 const BAT=[
@@ -17,8 +17,8 @@ const BAT=[
  ["11","DeWalt heavy-duty angle grinder"],["12","DeWalt impact wrench"],["13","DeWalt jigsaw DCS331"],["14","DeWalt blower"],["15","Makita tek screwdriver DFS251"],
  ["16","Makita nibbler"],["17","Makita metal shear"],["18","Makita tek screwdriver DFS251"],["19","DeWalt combi drill"],["20","DeWalt site radio (small) – battery only, not used on mains"],
  ["21","DeWalt site radio (large) – battery only, not used on mains"],["22","DeWalt PAPR respirator – also complete the RPE / PAPR form"],
- ["23","DeWalt cut-off saw – currently mislaid; number and photo to follow"]
-].map(([n,desc])=>({id:"BT"+n,desc,group:"Battery tools (number marked on the tool)",img:+n<=22?"tools/BT"+n+".jpg":"",
+ ["23","DeWalt cut-off saw – currently mislaid; number and photo to follow"],["24","DeWalt impact driver DCF887"]
+].map(([n,desc])=>({id:"BT"+n,desc,group:"Battery tools (number marked on the tool)",img:n!=="23"?"tools/BT"+n+".jpg":"",
    link:n==="22"?"rpe-papr.html":"",linkLabel:n==="22"?"Open the RPE / PAPR check form →":""}));
 const PAT=[
  ["PSL61667","Vacuum cleaner (dust extractor)"],["PSL61668","110 V transformer"],["PSL61669","110 V transformer"],["PSL61670","110 V transformer"],["PSL61671","110 V transformer"],
@@ -44,7 +44,7 @@ BC.start({
     {type:"info",html:"Each day <b>before you use</b> a tool: pick the day, then tick each check for every item you're using. <b>✗ Fault</b> = stop, take it out of use and tell Graham. Items stay on the sheet all week, so you only add them once. Send it at the end of the week."},
     {type:"fields",id:"det",title:"Operator and week",fields:[{id:"op",label:"Operator name",req:true},{id:"wc",label:"Week commencing (Monday)",kind:"date",req:true},{id:"job",label:"Job number / site"}]},
     {type:"equip",id:"eqp",title:"Equipment and daily checks",weekField:"wc",allowOther:true,catalogue:CAT,
-      intro:"Pick the tool from the list. Battery tools are listed by the number marked on the tool (BT01–BT23) – a photo shows when you pick one; mains / 110 V kit by the ID on its PAT label. For anything not on the list – e.g. hot-air welder or gas torch – type the description and its ID under “other”.",
+      intro:"Pick the tool from the list. Battery tools are listed by the number marked on the tool (BT01–BT24) – a photo shows when you pick one; mains / 110 V kit by the ID on its PAT label. For anything not on the list – e.g. hot-air welder or gas torch – type the description and its ID under “other”.",
       checks:[C("c1","Equipment casing / body"),C("c2","Equipment stable"),C("c3","Guards – fitted and secure"),C("c4","PAT label in date (if applicable)"),C("c5","Wiring / cables"),C("c6","Electrical plug"),C("c7","Battery casing (if applicable)"),C("c8","Battery charger – casing (if applicable)"),C("c9","Battery charger – cables (if applicable)"),C("c10","On/off switch operational"),C("c11","Emergency stops operational"),C("c12","Controls clearly marked"),C("c13","Warning devices operational, e.g. safety interlocks"),C("c14","Test certificates in date (e.g. lifting accessories)"),C("c15","Still as per the manufacturer's design (not modified)"),C("c16","Safety appliances in good condition, e.g. clamps"),C("c17","Working area hazard-free – unobstructed, no trip / slip hazards"),C("c18","Lighting in the working area suitable"),C("c19","Appropriate signage in place")]},
     {type:"sigs",id:"sg",title:"Sign-off",sigs:[{id:"opr",label:"Operator"},{id:"mgr",label:"Manager / Supervisor (end of week)",optional:true,comments:"Manager / Supervisor's comments – actions taken, by whom and when"}]}
   ]
